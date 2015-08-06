@@ -1,0 +1,603 @@
+package com.asj.pls.activity;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.asj.pls.R;
+import com.asj.pls.info.CartInfo;
+import com.asj.pls.init.Model;
+import com.asj.pls.util.JSONUtils;
+import com.asj.pls.view.MyListView;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.os.Handler;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.view.Window;
+import android.view.View.OnClickListener;
+import android.view.WindowManager;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+public class FillSingleActivity extends Activity implements OnClickListener{
+
+	/** 
+     * 支付金额
+     */
+	private TextView payPriceText;
+	
+	/** 
+     * 返回
+     */
+    private ImageView backFillSingle;
+    
+    /** 
+     * 收货人、手机、地址
+     */
+    private TextView conText,mobText,addrText;
+    
+    /** 
+     * 地址修改栏
+     */
+    private RelativeLayout addressEdit;
+    
+    /** 
+     * 支付方式、配送方式、选择送货时间 、添加优惠券、填写备注
+     */
+    private LinearLayout payWay,deliveryWay,sentTime,couponWay,ordersRemark;
+    
+    /** 
+     * 一、在线支付0、货到付款1 二、送货到家0、1门店自提
+     */
+    private Integer payType,deliveryType;
+    
+    /** 
+     * 地址id
+     */
+    private Long addressId;
+    
+    /** 
+     * 当前选择时间
+     */
+    private String curTime = "立即送出";
+    
+    /** 
+     * 选择弹窗
+     */
+    private PopupWindow payPopupWindow;
+    
+    /** 
+     * 支付名称、配送名称、配送时间、优惠券信息
+     */
+    private TextView curPayTypeName,curDeliveryTypeName,currentTimeName,currentCouponName,orderRemarkContent;
+    
+    /** 
+     * 定义一个ArrayList来存放时间
+     */
+    private ArrayList<String> timeList = new ArrayList<String>();
+    
+    /** 
+     * 定义一个ArrayList来存放商品
+     */
+    private ArrayList<CartInfo> cartlist = new ArrayList<CartInfo>();
+    
+    /** 
+     * 选择时间
+     */
+    private String startTime,endTime;
+    
+    /** 
+     * 订单商品控件
+     */
+    private MyListView pdListView;
+    
+    /** 
+     * 订单商品
+     */
+    private PdAdapter pdAdapter;
+    
+    /** 
+     * 已选中、未选中
+     */
+    private Drawable selected,unselected;
+    
+    /** 
+     * 底部导航栏
+     */
+	private RelativeLayout fillSingleFootView;
+	
+	/** 
+     * 底部填充控件
+     */
+	private TextView footView;
+    
+    private String ordersJson = "{'data':{'address':'浙江省杭州市下沙区天城东路77号创意大厦1901','buyPrice':5.00,'cartList':[{'pdId':1,'pdName':'清清美 卫生手套','price':'￥3.50','num':'1'},{'pdId':2,'pdName':'利群 硬盒香烟 200支/条','price':'￥140.00','num':'2'},{'pdId':3,'pdName':'早天下 绿宝甜瓜 约3斤','price':'￥5.40','num':'3'},{'pdId':4,'pdName':'徐福记 香酥芝麻味沙琪玛 311g','price':'￥8.90','num':'4'},{'pdId':5,'pdName':'红菱花 味精 100g/袋','price':'￥2.30','num':'5'},{'pdId':6,'pdName':'达利园 软面包香奶味 18个 360g','price':'￥9.50','num':'6'},{'pdId':7,'pdName':'黄山 中国松硬盒烟 200支/条','price':'￥110.00','num':'7'},{'pdId':8,'pdName':'峪林 包子饺子料 35g','price':'￥2322.90','num':'8'},{'pdId':9,'pdName':'佳宝 原味酸奶 180g','price':'￥2.30','num':'9'},{'pdId':10,'pdName':'崂山 冰镇精品啤酒 600ml/瓶','price':'￥2.90','num':'10'}],'consignee':'王波','freePrice':20.00,'mobile':'15657113890','startTime':'8:00','endTime':'21:00','adId':1},'errorInfo':'请求成功','errorNo':0}";
+    
+    
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		setContentView(R.layout.activity_fill_single);
+		initView();
+		new Thread(new Runnable() {
+        	
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				mHandler.obtainMessage().sendToTarget();
+			}
+			
+        }).start();
+	}
+	
+	private void initView(){
+		
+		int w =View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED);
+    	int h =View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED);
+    	
+		payType = 0;
+		deliveryType = 0;
+		selected = getResources().getDrawable(R.drawable.pay_selected);
+		unselected = getResources().getDrawable(R.drawable.pay_unselected);
+		selected.setBounds(0, 0, selected.getMinimumWidth(), selected.getMinimumHeight());
+		unselected.setBounds(0, 0, unselected.getMinimumWidth(), unselected.getMinimumHeight());
+		
+		backFillSingle = (ImageView)findViewById(R.id.back_fillSingle);
+		conText = (TextView) findViewById(R.id.my_orders_consignee);
+		mobText = (TextView) findViewById(R.id.my_orders_mobile);
+		addrText = (TextView) findViewById(R.id.my_orders_address);
+		addressEdit = (RelativeLayout) findViewById(R.id.orders_address_line);
+		
+		curPayTypeName = (TextView) findViewById(R.id.current_pay_type);
+		payWay = (LinearLayout) findViewById(R.id.pay_way);
+		
+		curDeliveryTypeName = (TextView) findViewById(R.id.current_delivery_type);
+		deliveryWay = (LinearLayout) findViewById(R.id.delivery_way);
+		
+		currentTimeName = (TextView) findViewById(R.id.current_time);
+		sentTime = (LinearLayout) findViewById(R.id.sent_time);
+		
+		couponWay = (LinearLayout) findViewById(R.id.coupon_way);
+		currentCouponName = (TextView) findViewById(R.id.current_coupon_name);
+		
+		ordersRemark = (LinearLayout) findViewById(R.id.orders_remark);
+		orderRemarkContent = (TextView) findViewById(R.id.order_remark_content);
+		
+		pdListView = (MyListView) findViewById(R.id.pdListView);
+		pdAdapter = new PdAdapter(this, cartlist);
+		pdListView.setFocusable(false);
+		pdListView.setAdapter(pdAdapter);
+		
+		fillSingleFootView = (RelativeLayout) findViewById(R.id.fillSingle_foot_line);
+		footView = (TextView) findViewById(R.id.orders_line_five);
+		fillSingleFootView.measure(w, h);
+		fillSingleFootView.measure(w, h);
+		footView.setHeight(fillSingleFootView.getMeasuredHeight());
+		
+		payPriceText = (TextView) findViewById(R.id.orders_total_price);
+		payPriceText.setText(Model.cartPrice.toString());
+		
+		sentTime.setOnClickListener(this);
+		payWay.setOnClickListener(this);
+		deliveryWay.setOnClickListener(this);
+		addressEdit.setOnClickListener(this);
+		backFillSingle.setOnClickListener(this);
+		couponWay.setOnClickListener(this);
+		ordersRemark.setOnClickListener(this);
+	}
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		switch(v.getId()){
+		case R.id.back_fillSingle:
+			this.finish();
+			break;
+		case R.id.pay_way://切换支付方式
+			getPayPopupWindowInstance(0);
+			payPopupWindow.showAtLocation(payWay, Gravity.CENTER_HORIZONTAL, 0, 0);
+			break;
+		case R.id.pay_online://选择在线支付
+			payType = 0;
+			closePopupWindow();
+			curPayTypeName.setText("在线支付");
+			break;
+		case R.id.pay_cod://选择货到付款
+			payType = 1;
+			closePopupWindow();
+			curPayTypeName.setText("货到付款");
+			break;
+		case R.id.delivery_way://切换配送方式
+			getPayPopupWindowInstance(1);
+			payPopupWindow.showAtLocation(deliveryWay, Gravity.CENTER_HORIZONTAL, 0, 0);
+			break;
+		case R.id.delivery_unself://选择送货到家
+			deliveryType = 0;
+			closePopupWindow();
+			curDeliveryTypeName.setText("送货到家");
+			break;
+		case R.id.delivery_self://选择门店自提
+			deliveryType = 1;
+			closePopupWindow();
+			curDeliveryTypeName.setText("门店自提");
+			break;
+		case R.id.sent_time://切换配送时间
+			getPayPopupWindowInstance(2);
+			payPopupWindow.showAtLocation(addressEdit, Gravity.CENTER_HORIZONTAL, 0, 0);
+			break;
+		case R.id.orders_address_line://地址填写
+			Intent addressIntent = new Intent(FillSingleActivity.this,AddressActivity.class);
+			addressIntent.putExtra("addressId", addressId);
+			startActivityForResult(addressIntent,1);
+			overridePendingTransition(R.anim.push_right_in, R.anim.push_current);
+			break;
+		case R.id.coupon_way://优惠券
+			Intent couponIntent = new Intent(FillSingleActivity.this,CouponActivity.class);
+			startActivityForResult(couponIntent,2);
+			overridePendingTransition(R.anim.push_right_in, R.anim.push_current);
+			break;
+		case R.id.orders_remark://订单备注
+			break;
+		}
+	}
+	
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		switch(requestCode){
+		case 1://地址返回
+			if(data != null){
+				String[] addressDetail = data.getStringArrayExtra("addressDetail");
+				addressId = Long.parseLong(addressDetail[0]);
+				conText.setText(addressDetail[1]);
+				mobText.setText(addressDetail[2]);
+				addrText.setText(addressDetail[3]);
+			}
+			break;
+		case 2://优惠券返回
+			break;
+		}
+    }
+	
+	private Handler mHandler = new Handler() {
+		public void handleMessage(android.os.Message msg) {
+			try {
+				if(ordersJson != null){
+					JSONObject ordersObject = JSONUtils.parseJson(ordersJson, "data");
+					conText.setText(ordersObject.getString("consignee"));
+					mobText.setText(ordersObject.getString("mobile"));
+					addrText.setText(ordersObject.getString("address"));
+					startTime = ordersObject.getString("startTime");
+					endTime = ordersObject.getString("endTime");
+					addressId = ordersObject.getLong("adId");
+					JSONArray pdArray = ordersObject.getJSONArray("cartList");
+					if(pdArray != null && pdArray.length() > 0){
+						for(int i = 0; i < pdArray.length(); i++){
+							JSONObject object = pdArray.getJSONObject(i);
+							CartInfo cartPdItem = new CartInfo();
+							cartPdItem.setPdId(object.getLong("pdId"));
+							cartPdItem.setPdName(object.getString("pdName"));
+							cartPdItem.setPrice(object.getString("price"));
+							cartPdItem.setNum("x" +object.getString("num"));
+							cartlist.add(cartPdItem);
+						}
+						pdAdapter.notifyDataSetChanged();
+					}
+				}
+			} catch (JSONException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+			}
+		};
+		
+	};
+	
+	/* 
+     * 获取PopupWindow实例 
+     */  
+    private void getPayPopupWindowInstance(int type) {
+        if (null != payPopupWindow) {
+        	closePopupWindow();
+            return;
+        } else {
+            initPopuptWindow(type);
+        }
+    }
+    
+    /* 
+     * 创建PopupWindow type 0支付方式、1配送方式、3送货时间
+     */  
+    private void initPopuptWindow(int type) {
+    	
+         // 设置动画效果     
+        WindowManager.LayoutParams params = getWindow().getAttributes();  
+        params.alpha = 0.7f;  
+        getWindow().setAttributes(params);
+    	
+        LayoutInflater layoutInflater = LayoutInflater.from(this);
+        View popupWindow = null;
+        
+        if(type == 0){
+        	popupWindow = layoutInflater.inflate(R.layout.pop_fill_single_pay, null);
+        	LinearLayout payOnline = (LinearLayout) popupWindow.findViewById(R.id.pay_online);
+            LinearLayout payCod = (LinearLayout) popupWindow.findViewById(R.id.pay_cod);
+            payOnline.setOnClickListener(this);
+            payCod.setOnClickListener(this);
+            if(payType == 1){//货到付款
+            	TextView payOnlineText = (TextView) popupWindow.findViewById(R.id.pay_online_text);
+                TextView payCodText = (TextView) popupWindow.findViewById(R.id.pay_cod_text);
+            	payOnlineText.setCompoundDrawables(null, null, unselected, null);
+            	payCodText.setCompoundDrawables(null, null, selected, null);
+            }
+        }else if(type == 1){
+        	popupWindow = layoutInflater.inflate(R.layout.pop_fill_single_delivery, null);
+        	LinearLayout deliveryUnself = (LinearLayout) popupWindow.findViewById(R.id.delivery_unself);
+            LinearLayout deliverySelf = (LinearLayout) popupWindow.findViewById(R.id.delivery_self);
+            deliveryUnself.setOnClickListener(this);
+            deliverySelf.setOnClickListener(this);
+            if(deliveryType == 1){//门店自提
+            	TextView deliveryUnselfText = (TextView) popupWindow.findViewById(R.id.delivery_unself_text);
+            	TextView deliverySelfText = (TextView) popupWindow.findViewById(R.id.delivery_self_text);
+            	deliveryUnselfText.setCompoundDrawables(null, null, unselected, null);
+            	deliverySelfText.setCompoundDrawables(null, null, selected, null);
+            }
+        }else if(type == 2){
+        	createTime();//时间初始化
+        	popupWindow = layoutInflater.inflate(R.layout.pop_fill_single_time, null);
+        	TimeAdapter timeAdapter = new TimeAdapter(this, timeList);
+        	ListView timeListView = (ListView) popupWindow.findViewById(R.id.time_ListView);
+    		timeListView.setAdapter(timeAdapter);
+        }
+        
+        int mScreenWidth = getWindowManager().getDefaultDisplay().getWidth();
+        mScreenWidth = mScreenWidth - mScreenWidth/5;
+        payPopupWindow = new PopupWindow(popupWindow, mScreenWidth, LayoutParams.WRAP_CONTENT, true);  
+        payPopupWindow.setFocusable(true);
+        popupWindow.setOnTouchListener(new OnTouchListener() {
+        	
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				// TODO Auto-generated method stub
+				closePopupWindow();
+				return false;
+			}
+			
+		});
+    }
+    
+    /** 
+     * 关闭窗口 
+     */
+    private void closePopupWindow(){
+    	if(payPopupWindow != null && payPopupWindow.isShowing()) {
+    		payPopupWindow.dismiss();
+    		payPopupWindow = null;
+    		WindowManager.LayoutParams params= getWindow().getAttributes();
+    		params.alpha=1f;
+    		getWindow().setAttributes(params);
+       }     
+    }
+    
+    /** 
+     * 处理时间
+     */
+    private void createTime(){
+    	timeList.clear();
+    	List<String> nexttimesList = new ArrayList<String>();
+    	String nowTime = new SimpleDateFormat("HH:mm").format(new Date());
+    	Integer start = Integer.parseInt(startTime.substring(0, startTime.indexOf(":")));
+    	Integer end = Integer.parseInt(endTime.substring(0, endTime.indexOf(":")));
+    	timeList.add("立即送出");
+    	for(int i = start; i <= end; i++){
+    		String compareTime = null;
+    		StringBuffer time = new StringBuffer();
+    		if(i == start){
+    			compareTime = startTime;
+    			time = time.append(startTime).append("-").append(i+1).append(":00");
+    			nexttimesList.add("明天  " +time.toString());
+    		}else if(i == end && !( i+ ":00").equals(endTime)){
+    			compareTime = endTime;
+    			time = time.append(i).append(":00").append("-").append(endTime);
+    			nexttimesList.add("明天  " +time.toString());
+    		}else if(i != start && i != end){
+    			compareTime = i + ":00";
+    			time = time.append(i).append(":00").append("-").append(i+1).append(":00");
+    			nexttimesList.add("明天  " +time.toString());
+    		}
+    		try {
+    			if(compareTime != null){
+    				int compare = DateCompare(compareTime,nowTime,"HH:mm");
+    				if(compare >= 0){
+    					timeList.add("今天  " + time.toString());
+    				}
+    			}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+    	}
+    	timeList.addAll(nexttimesList);
+    }
+    
+    /**
+     * 根据时间类型比较时间大小 
+     * 
+     * @param source
+     * @param traget
+     * @param type "YYYY-MM-DD" "yyyyMMdd HH:mm:ss"  类型可自定义
+     * @param 传递时间的对比格式
+     * @return 
+     *  0 ：source和traget时间相同    
+     *  1 ：source比traget时间大  
+     *  -1：source比traget时间小
+     * @throws Exception
+     */
+    public int DateCompare(String source, String traget, String type) throws Exception {
+        int ret = 2;
+        SimpleDateFormat format = new SimpleDateFormat(type);
+        Date sourcedate = format.parse(source);
+        Date tragetdate = format.parse(traget);
+        ret = sourcedate.compareTo(tragetdate);
+        return ret;
+    }
+    
+    /** 
+     * 配送时间适配器
+     */
+    private class TimeAdapter extends BaseAdapter{
+
+    	private ArrayList<String> timelist;
+    	
+    	private Context context;
+    	
+    	public TimeAdapter(Context context, ArrayList<String> timelist) {
+    		this.timelist = timelist;
+    		this.context = context;
+    	}
+    	
+		@Override
+		public int getCount() {
+			// TODO Auto-generated method stub
+			if(timelist == null){
+				return 0;
+			}
+			return timelist.size();
+		}
+
+		@Override
+		public Object getItem(int position) {
+			// TODO Auto-generated method stub
+			if(timelist == null){
+				return null;
+			}
+			return timelist.get(position);
+		}
+
+		@Override
+		public long getItemId(int position) {
+			// TODO Auto-generated method stub
+			return position;
+		}
+
+		@Override
+		public View getView(final int position, View convertView, ViewGroup parent) {
+			// TODO Auto-generated method stub
+			final Holder hold;
+			if (convertView == null) {
+				hold = new Holder();
+				convertView = View.inflate(context, R.layout.item_sent_time, null);
+				hold.time = (TextView) convertView.findViewById(R.id.deliver_time);
+				convertView.setTag(hold);
+			}else {
+				hold = (Holder) convertView.getTag();
+			}
+			hold.time.setText(timelist.get(position));
+			if(curTime.equals(timelist.get(position))){
+				hold.time.setCompoundDrawables(null, null, selected, null);
+			}else{
+				hold.time.setCompoundDrawables(null, null, null, null);
+			}
+			convertView.setOnClickListener(new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					// TODO Auto-generated method stub
+					curTime = timelist.get(position);
+					currentTimeName.setText(timelist.get(position));
+					closePopupWindow();
+				}
+				
+			});
+			
+			return convertView;
+		}
+		
+    }
+    
+    static class Holder {
+		private TextView time;
+	}
+    
+    /** 
+     * 配送时间适配器
+     */
+    private class PdAdapter extends BaseAdapter{
+
+    	private ArrayList<CartInfo> cartlist;
+    	
+    	private Context context;
+    	
+    	public PdAdapter(Context context, ArrayList<CartInfo> cartlist) {
+    		this.cartlist = cartlist;
+    		this.context = context;
+    	}
+    	
+		@Override
+		public int getCount() {
+			// TODO Auto-generated method stub
+			if(cartlist == null){
+				return 0;
+			}
+			return cartlist.size();
+		}
+
+		@Override
+		public Object getItem(int position) {
+			// TODO Auto-generated method stub
+			if(cartlist == null){
+				return null;
+			}
+			return cartlist.get(position);
+		}
+
+		@Override
+		public long getItemId(int position) {
+			// TODO Auto-generated method stub
+			return position;
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			// TODO Auto-generated method stub
+			final PdHolder hold;
+			if (convertView == null) {
+				hold = new PdHolder();
+				convertView = View.inflate(context, R.layout.item_orders_pd, null);
+				hold.name = (TextView) convertView.findViewById(R.id.Item_pd_name);
+				hold.price = (TextView) convertView.findViewById(R.id.Item_pd_price);
+				hold.num = (TextView) convertView.findViewById(R.id.Item_pd_num);
+				convertView.setTag(hold);
+			} else {
+				hold = (PdHolder) convertView.getTag();
+			}
+			hold.name.setText(cartlist.get(position).getPdName());
+			hold.price.setText(cartlist.get(position).getPrice());
+			hold.num.setText(cartlist.get(position).getNum());
+			return convertView;
+		}
+    	
+    }
+    
+    static class PdHolder {
+    	private TextView name, price, num;
+	}
+}

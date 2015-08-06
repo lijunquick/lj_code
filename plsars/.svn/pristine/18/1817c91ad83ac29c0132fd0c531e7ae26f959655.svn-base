@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	android:background="@android:color/white">
+	
+	<RelativeLayout
+		android:layout_width="match_parent"
+		android:layout_height="0dp"
+		android:layout_weight="0.5"
+		android:orientation="vertical">
+		
+	    <LinearLayout
+	        android:id="@+id/promote_pd_image_line" 
+	        android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+	        
+	        <ImageView
+	            android:id="@+id/promote_pd_image" 
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:background="@drawable/a_a"/>
+	        
+	    </LinearLayout>
+	    
+	    
+	    <LinearLayout 
+	        android:id="@+id/pd_name_line"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+           	android:layout_below="@+id/promote_pd_image_line"
+            android:orientation="vertical">
+            
+            <TextView
+                android:id="@+id/promote_pd_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:textSize="12.0sp"
+                android:textColor="@color/gray_bg_text"
+                android:text="早天下  泰国进口香蕉 约5斤"/>
+            
+            
+        </LinearLayout>
+	    
+	    <RelativeLayout
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_below="@+id/pd_name_line"
+	        android:orientation="horizontal">
+            
+	        <TextView
+	            android:id="@+id/promote_pd_price"
+	            android:layout_width="match_parent"
+	            android:layout_height="wrap_content"
+	            android:textColor="#FF4500"
+	            android:textSize="15.0sp"
+	            android:padding="5dp"
+	            android:text="￥1.00"/>
+	        
+	        <TextView
+	            android:id="@+id/promote_pd_cart"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:layout_alignParentRight="true"
+	            android:padding="5dp"
+	            android:background="@drawable/add_cart"/>
+	        
+	    </RelativeLayout>
+	    
+	    <RelativeLayout
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentTop="true">
+            
+	        <TextView
+	            android:id="@+id/promote_pd_tag"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"/>
+	        
+	    </RelativeLayout>
+	</RelativeLayout>
+	
+</LinearLayout> 

@@ -1,0 +1,185 @@
+package com.asj.pls.fragment;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.asj.pls.R;
+import com.asj.pls.adapter.CartAdapter;
+import com.asj.pls.info.CartInfo;
+import com.asj.pls.init.Model;
+import com.asj.pls.util.JSONUtils;
+
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.os.Bundle;
+import android.os.Handler;
+import android.support.v4.app.Fragment;
+import android.view.ContextThemeWrapper;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+public class MyTabFragmentTwo extends Fragment implements OnClickListener{
+	
+	/** 
+     * 收货人、手机、地址
+     */
+    private TextView conText,mobText,addrText,cartFreePrice;
+	
+    /** 
+     * 购物车列表控件
+     */
+    private ListView cartListView;
+    
+    /** 
+     * 清空购物车所以商品
+     */
+    public ImageView clearCartPd;
+    
+    /** 
+     * 购物车适配器
+     */
+	private CartAdapter cartAdapter;
+    
+	/** 
+     * 购物车数据
+     */
+	private ArrayList<CartInfo> cartlist = new ArrayList<CartInfo>();
+	
+	/** 
+     * 合计金额
+     */
+	public static TextView cartPriceTotal;
+	
+	/** 
+     * 配送起送金额
+     */
+	public static TextView cartGoWrite;
+	
+	/** 
+     * 底部购物车控件
+     */
+	private RelativeLayout footCartView;
+	
+	/** 
+     * 购买起始金额
+     */
+	public static BigDecimal buyPirce;
+	
+	private String cartJson = "{'data':{'address':'浙江省杭州市下沙区天城东路77号创意大厦1901','buyPrice':35.00,'cartList':[{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20156271711422063546807400.jpg','num':'1','pdId':1,'pdName':'清清美 卫生手套','price':'3.50'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/201576185349004808334808.jpg','num':'1','pdId':2,'pdName':'利群 硬盒香烟 200支/条','price':'140.00'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20156595950765574798888.jpg','num':'1','pdId':3,'pdName':'早天下 绿宝甜瓜 约3斤','price':'5.40'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/2015523144994338920094282.jpg','num':'1','pdId':4,'pdName':'徐福记 香酥芝麻味沙琪玛 311g','price':'8.90'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/201569141014118994702510.jpg','num':'1','pdId':5,'pdName':'红菱花 味精 100g/袋','price':'2.30'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20156281017367793285427537.jpg','num':'1','pdId':6,'pdName':'达利园 软面包香奶味 18个 360g','price':'9.50'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/201576180424449549230990.jpg','num':'1','pdId':7,'pdName':'黄山 中国松硬盒烟 200支/条','price':'110.00'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20156271031569276028322855.jpg','num':'1','pdId':8,'pdName':'峪林 包子饺子料 35g','price':'2322.90'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/2015628189306195028721131.jpg','num':'1','pdId':9,'pdName':'佳宝 原味酸奶 180g','price':'2.30'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/2015524202514799556709621.jpg','num':'1','pdId':10,'pdName':'崂山 冰镇精品啤酒 600ml/瓶','price':'2.90'}],'consignee':'王波','freePrice':0,'mobile':'15657113890'},'errorInfo':'请求成功','errorNo':0}";
+	
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {  
+        View categoryLayout = inflater.inflate(R.layout.layout_cart, container, false);
+        initView(categoryLayout);
+        new Thread(new Runnable() {
+        	
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				mHandler.obtainMessage().sendToTarget();
+			}
+			
+        }).start();
+        return categoryLayout;  
+    }
+	
+	private void initView(View v){
+		
+		int w =View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED);
+    	int h =View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED);
+    	
+		conText = (TextView)v.findViewById(R.id.my_cart_consignee);
+		mobText = (TextView)v.findViewById(R.id.my_cart_mobile);
+		addrText = (TextView)v.findViewById(R.id.my_cart_address);
+		cartFreePrice = (TextView)v.findViewById(R.id.cart_free_price);
+		cartPriceTotal = (TextView)v.findViewById(R.id.cart_price_total);
+		cartGoWrite = (TextView)v.findViewById(R.id.cart_go_write);
+		footCartView = (RelativeLayout) v.findViewById(R.id.cart_foot);
+		cartListView = (ListView)v.findViewById(R.id.cart_ListView);
+		clearCartPd = (ImageView) v.findViewById(R.id.clearall_cart_pd);
+		
+		
+		footCartView.measure(w, h);
+		TextView footView = new TextView(getActivity());
+		footView.measure(w, h);
+		footView.setHeight(footCartView.getMeasuredHeight());
+		cartListView.addFooterView(footView);
+		cartPriceTotal.setText(Model.cartPrice.toString());
+		
+		cartAdapter = new CartAdapter(getActivity(), cartlist);
+		cartListView.setAdapter(cartAdapter);
+		
+		cartGoWrite.setOnClickListener(this);
+		clearCartPd.setOnClickListener(this);
+		
+	}
+	
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		switch(v.getId()){
+		case R.id.cart_go_write://去填单页
+			break;
+		case R.id.clearall_cart_pd://清空所以购物车
+			AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(getActivity(), R.style.AlertDialogCustom));
+			builder.setTitle("是否删除购物车中商品?");
+			builder.setCancelable(false);
+			builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+			    public void onClick(DialogInterface dialog, int whichButton) {
+			        // 这里添加点击确定后的逻辑
+			    	Model.cartNum = 0;
+					Model.cartPrice = new BigDecimal("0.00");
+					cartlist.clear();
+					cartAdapter.notifyDataSetChanged();
+			    }
+			});
+			builder.create().show();
+			break;
+		}
+	}
+	
+	private Handler mHandler = new Handler() {
+		public void handleMessage(android.os.Message msg) {
+			try {
+				if(cartJson != null){
+					JSONObject cartObject = JSONUtils.parseJson(cartJson, "data");
+					conText.setText(cartObject.getString("consignee"));
+					mobText.setText(cartObject.getString("mobile"));
+					addrText.setText(cartObject.getString("address"));
+					cartObject.getString("buyPrice");
+					if(cartObject.getString("freePrice") != null && !cartObject.getString("freePrice").equals("0")){
+						cartFreePrice.setText("满" + cartObject.getString("freePrice") +"包邮");
+					}
+					JSONArray cartArray = cartObject.getJSONArray("cartList");
+					if(cartArray != null && cartArray.length() > 0){
+						for(int i = 0; i < cartArray.length(); i++){
+							JSONObject object = cartArray.getJSONObject(i);
+							CartInfo cartPdItem = new CartInfo();
+							cartPdItem.setPdId(object.getLong("pdId"));
+							cartPdItem.setPdName(object.getString("pdName"));
+							cartPdItem.setPrice(object.getString("price"));
+							cartPdItem.setImageurl(object.getString("imageurl"));
+							cartPdItem.setNum(object.getString("num"));
+							cartlist.add(cartPdItem);
+						}
+						cartAdapter.notifyDataSetChanged();
+					}
+				}
+			} catch (JSONException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+			}
+		};
+		
+	};
+	
+}

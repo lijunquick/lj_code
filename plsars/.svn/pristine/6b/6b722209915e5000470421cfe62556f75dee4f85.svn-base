@@ -1,0 +1,379 @@
+package com.asj.pls.activity;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.asj.pls.R;
+import com.asj.pls.util.JSONUtils;
+import com.asj.pls.util.KeyBoardUtils;
+import com.asj.pls.util.SPUtils;
+import com.baidu.location.BDLocation;
+import com.baidu.location.BDLocationListener;
+import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
+import com.baidu.location.LocationClientOption.LocationMode;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.view.Gravity;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.Window;
+import android.view.View.OnClickListener;
+import android.view.View.OnFocusChangeListener;
+import android.view.View.OnTouchListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.TextView.OnEditorActionListener;
+
+public class LocationActivity extends Activity implements OnClickListener, OnFocusChangeListener, TextWatcher{
+
+	/**
+     * 控件是否有焦点
+     */
+    private boolean hasFoucs;
+    
+	/** 
+     * 返回
+     */
+    private ImageView backImageLoc,backImageLocAft;
+    
+    /** 
+     * 定位输入框
+     */
+    private AutoCompleteTextView locationCondition;
+    
+    /** 
+     * 定位
+     */
+    private Button location;
+    
+    /** 
+     * 定位前区域,定位后区域,定位结果
+     */
+    private LinearLayout locationBefore,locationAfter,locationAddrlist;
+    
+    /**
+	 * 删除按钮的引用
+	 */
+    private Drawable mClearDrawable;
+    
+    /** 
+	  * 定位核心sdk
+	  */
+	private LocationClient mLocationClient;
+	
+	/** 
+	  * 显示定位地址条数
+	  */
+	private TextView locationNum;
+	
+	/** 
+	  * 匹配地址对应店铺
+	  */
+	private List<String> shopIdList;
+	
+	/** 
+	  * 匹配地址容器
+	  */
+	private ArrayAdapter<String> adapter;
+	
+	private String addJson = "{'data':[{'addStr':'海关大道56号-78号','shopId':1},{'addStr':'天城东路66号-125号','shopId':2},{'addStr':'下沙区东沙路1号大街','shopId':3},{'addStr':'凌云东阳店500米范围内','shopId':4},{'addStr':'兴隆锦绣城(文化街路北)','shopId':5},{'addStr':'华宁家园(文化街路北)','shopId':6},{'addStr':'彩虹家园(海力大道路西)','shopId':7},{'addStr':'惠民小区(文化街路北)','shopId':8},{'addStr':'海力集团家属院(杏岗路东)','shopId':9},{'addStr':'电池厂家属院(杏岗路西)','shopId':10},{'addStr':'建工家园(文化街路南)','shopId':11},{'addStr':'杏岗小区(文化街路南)','shopId':12},{'addStr':'民生家园(海力大道路西)','shopId':13},{'addStr':'文化路社区(文化街路南)','shopId':14},{'addStr':'检察院家属楼(杏岗路东)','shopId':15}],'errorInfo':'请求成功','errorNo':0}";
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		setContentView(R.layout.activity_location);
+		initViews();
+	}
+	
+	/** 
+     * 在这里获取到每个需要用到的控件的实例，并给它们设置好必要的点击事件。 
+     */  
+    private void initViews() {
+    	
+    	backImageLoc = (ImageView)findViewById(R.id.back_index_location);
+    	backImageLocAft = (ImageView)findViewById(R.id.back_index_location_after);
+    	location = (Button)findViewById(R.id.location_here);
+    	locationNum = (TextView)findViewById(R.id.location_num);
+    	locationBefore = (LinearLayout)findViewById(R.id.location_before);
+    	locationAfter = (LinearLayout)findViewById(R.id.location_after);
+    	locationAddrlist = (LinearLayout)findViewById(R.id.location_address_list);
+    	
+    	locationCondition = (AutoCompleteTextView)findViewById(R.id.location_condition);
+    	locationCondition.setThreshold(1);
+    	locationCondition.setDropDownHeight(320);
+    	mClearDrawable = locationCondition.getCompoundDrawables()[2];
+        if (mClearDrawable == null) {
+        	mClearDrawable = getResources().getDrawable(R.drawable.delete_selector); //图片样式
+        }
+        mClearDrawable.setBounds(0, 0, mClearDrawable.getIntrinsicWidth(), mClearDrawable.getIntrinsicHeight());
+        
+        location.setOnClickListener(this);
+    	backImageLoc.setOnClickListener(this);
+    	backImageLocAft.setOnClickListener(this);
+    	
+    	locationCondition.setOnClickListener(this);
+    	locationCondition.setOnFocusChangeListener(this);//设置焦点改变的监听
+    	locationCondition.addTextChangedListener(this);//设置输入框里面内容发生改变的监听
+    	locationCondition.setOnTouchListener(new OnTouchListener() {//设置输入清空的监听
+
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				// TODO Auto-generated method stub
+				if (event.getAction() == MotionEvent.ACTION_UP) {
+					if (locationCondition.getCompoundDrawables()[2] != null) {
+						
+						boolean touchable = event.getX() > (locationCondition.getWidth() - locationCondition.getTotalPaddingRight())
+								&& (event.getX() < ((locationCondition.getWidth() - locationCondition.getPaddingRight())));
+						
+						if (touchable) {
+							locationCondition.setText("");
+						}
+					}
+				}
+				return false;
+			}
+    		
+    	});
+    	locationCondition.setOnEditorActionListener(new OnEditorActionListener() {//设置键盘回车的监听
+			
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				// TODO Auto-generated method stub
+				return false;
+			}
+			
+		});
+    	
+    	locationCondition.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,int position, long id) {
+				// TODO Auto-generated method stub
+				selectLocation(shopIdList.get(position),adapter.getItem(position));
+				KeyBoardUtils.closeKeybord(locationCondition, getApplicationContext());
+			}
+			
+		});
+    	
+    	
+    	KeyBoardUtils.openKeybord(locationCondition, this);
+    }
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		switch(v.getId()){
+		case R.id.back_index_location:
+			KeyBoardUtils.closeKeybord(locationCondition, this);
+			this.finish();
+			this.overridePendingTransition(R.anim.push_current, R.anim.push_up_out);
+			break;
+		case R.id.location_here:
+			mLocationClient = new LocationClient(this.getApplicationContext());//实例化LocationClient类
+			mLocationClient.registerLocationListener(new MyLocationListener());//注册监听函数
+			this.InitLocation();//设置定位参数
+			mLocationClient.start();
+			break;
+		case R.id.back_index_location_after:
+			locationBefore.setVisibility(View.VISIBLE);
+			locationAfter.setVisibility(View.GONE);
+			KeyBoardUtils.openKeybord(locationCondition, this);
+			break;
+		}
+	}
+
+	@Override
+	public void onTextChanged(CharSequence s, int start, int before, int count) {
+		// TODO Auto-generated method stub
+		if(hasFoucs){
+			final String words = s.toString();
+    		setClearIconVisible(s.length() > 0);
+    		new Thread(new Runnable() {
+            	
+    			@Override
+    			public void run() {
+    				// TODO Auto-generated method stub
+    				Message msg = new Message();
+    				msg.obj = words;
+    				mHandler.sendMessage(msg);
+    			}
+    			
+            }).start();
+    	}
+	}
+
+	@Override
+	public void onFocusChange(View v, boolean hasFocus) {
+		// TODO Auto-generated method stub
+		this.hasFoucs = hasFocus;
+        if (hasFocus) { 
+            setClearIconVisible(locationCondition.getText().length() > 0); 
+        } else { 
+            setClearIconVisible(false); 
+        }
+	}
+	
+	@Override
+	public void beforeTextChanged(CharSequence s, int start, int count,
+			int after) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public void afterTextChanged(Editable s) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	/**
+     * 设置清除图标的显示与隐藏，调用setCompoundDrawables为EditText绘制上去
+     * @param visible
+     */
+    protected void setClearIconVisible(boolean visible) {
+        Drawable right = visible ? mClearDrawable : null;
+        locationCondition.setCompoundDrawables(locationCondition.getCompoundDrawables()[0], locationCondition.getCompoundDrawables()[1], right, locationCondition.getCompoundDrawables()[3]);
+    }
+    
+    /**
+	  * 定位
+	  */
+    private void InitLocation(){
+    	LocationClientOption option = new LocationClientOption();
+		option.setAddrType("all");
+		option.setLocationMode(LocationMode.Hight_Accuracy);//设置定位模式
+		option.setCoorType("gcj02");//返回的定位结果是百度经纬度，默认值gcj02
+		option.setScanSpan(5000);//设置发起定位请求的间隔时间为5000ms
+		option.setIsNeedAddress(true);
+		mLocationClient.setLocOption(option);
+	}
+    
+    /**
+	  * 信息显示
+	  */
+    private void showToast(String info){
+    	Toast toast = Toast.makeText(getApplicationContext(), info, Toast.LENGTH_SHORT);
+		toast.setGravity(Gravity.TOP | Gravity.CENTER, 0, 220);
+		toast.show();
+    }
+    
+    /**
+	 * 实现实位回调监听
+	 */
+	public class MyLocationListener implements BDLocationListener {
+
+		@Override
+		public void onReceiveLocation(BDLocation location) {
+			//Receive Location
+			if(location != null){
+				SPUtils.put("isLocation", location.getStreet(), getApplicationContext());
+				Double lat = location.getLatitude();//维度坐标
+				Double lon = location.getLongitude();//经度坐标
+				try {
+					if(addJson != null){
+						locationBefore.setVisibility(View.GONE);
+						locationAfter.setVisibility(View.VISIBLE);
+						KeyBoardUtils.closeKeybord(locationCondition, getApplicationContext());
+						JSONArray array = JSONUtils.parseJsonMulti(addJson, "data");
+						if(array != null && array.length() > 0){
+							locationNum.setText("共  " + array.length() +"  条");
+							for (int i = 0; i < array.length(); i++) {
+								JSONObject object = array.getJSONObject(i);
+								final String id = object.getString("shopId");
+								final String addr = object.getString("addStr");
+								TextView itemView = new TextView(getApplicationContext());
+				    			itemView.setText(addr);
+				    			itemView.setTextSize(15);
+				    			itemView.setTextColor(Color.parseColor("#ff888888"));
+				    			itemView.setBackgroundResource(R.drawable.record_search_text_view);
+				    			itemView.setClickable(true);
+				    			itemView.setPadding(15, 20, 10, 20);
+				    			itemView.setSingleLine(true); 
+				    			itemView.setEllipsize(TextUtils.TruncateAt.valueOf("END"));
+				    			itemView.setOnClickListener(new OnClickListener() {
+				    				@Override
+				    				public void onClick(View v) {
+				    					// TODO Auto-generated method stub
+				    					selectLocation(id,addr);
+				    				}
+				    			});
+				    			locationAddrlist.addView(itemView);
+							}
+						}
+					}else{
+						showToast("抱歉,您定位的城市尚未开通服务");
+					}
+					
+				} catch (JSONException e) {
+	                // TODO Auto-generated catch block
+	                e.printStackTrace();
+				}
+			}else{
+				showToast("请保持网络畅通或者检查GPS是否开启");
+			}
+			mLocationClient.stop();
+		}
+	}
+	
+	private Handler mHandler = new Handler() {
+		public void handleMessage(android.os.Message msg) {
+			String jsonStr = (String) msg.obj;
+			if(jsonStr != null){
+				try {
+					JSONArray array = JSONUtils.parseJsonMulti(addJson, "data");
+					if(array != null && array.length() > 0){
+						shopIdList = new ArrayList<String>();
+						String[] temp = new String[array.length()];
+						for (int i = 0; i < array.length(); i++) {
+							JSONObject object = array.getJSONObject(i);
+							temp[i] = object.getString("addStr");
+							shopIdList.add(object.getString("shopId"));
+						}
+						adapter = new ArrayAdapter<String>(getApplicationContext(),R.layout.item_loc, temp);
+						
+						locationCondition.setAdapter(adapter);
+						adapter.notifyDataSetChanged();
+					}
+				} catch (JSONException e) {
+	                // TODO Auto-generated catch block
+	                e.printStackTrace();
+				}
+			}
+		};
+	};
+	
+	/**
+     * 地址选择
+     */
+	private void selectLocation(String id, String addr){
+		SPUtils.put("isLocation", addr, getApplicationContext());
+		Intent intent = new Intent();
+		intent.putExtra("result", id);
+        this.setResult(RESULT_OK, intent);
+        //关闭Activity
+		this.finish();
+	}
+}

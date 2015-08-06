@@ -1,0 +1,116 @@
+package com.asj.pls.adapter;
+
+import java.util.ArrayList;
+
+import com.asj.pls.R;
+import com.asj.pls.info.PdInfo;
+import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.View.OnClickListener;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+
+/**
+ * 订单列表适配器
+ *
+ */
+
+public class ProductAdapter extends BaseAdapter {
+
+	private ArrayList<PdInfo> productlist;
+	
+	private Context context;
+	
+	public ImageLoader imageLoader = ImageLoader.getInstance();
+
+	public DisplayImageOptions options;
+
+	public ProductAdapter(Context context, ArrayList<PdInfo> productlist) {
+		this.productlist = productlist;
+		this.context = context;
+		options = new DisplayImageOptions.Builder().showImageForEmptyUri(R.drawable.default_pd_image).showImageOnFail(R.drawable.default_pd_image).cacheInMemory(true).cacheOnDisc(true).bitmapConfig(Bitmap.Config.RGB_565).build();
+		initImageLoader(context);
+	}
+
+	@Override
+	public int getCount() {
+		// TODO Auto-generated method stub
+		if(productlist == null){
+			return 0;
+		}
+		return productlist.size();
+	}
+
+	@Override
+	public Object getItem(int position) {
+		// TODO Auto-generated method stub
+		if(productlist != null){
+			return null;
+		}
+		return productlist.get(position);
+	}
+
+	@Override
+	public long getItemId(int position) {
+		// TODO Auto-generated method stub
+		return position;
+	}
+
+	@Override
+	public View getView(final int position, View convertView, ViewGroup parent) {
+		// TODO Auto-generated method stub
+		final Holder hold;
+		if (convertView == null) {
+			hold = new Holder();
+			convertView = View.inflate(context, R.layout.item_pd, null);
+			hold.pdName = (TextView) convertView.findViewById(R.id.pd_name);
+			hold.price = (TextView) convertView.findViewById(R.id.pd_price);
+			hold.imageurl = (ImageView) convertView.findViewById(R.id.pd_image);
+			convertView.setTag(hold);
+		} else {
+			hold = (Holder) convertView.getTag();
+		}
+		hold.pdName.setText(productlist.get(position).getPdName());
+		hold.price.setText(productlist.get(position).getPrice());
+		imageLoader.displayImage(productlist.get(position).getImageurl(), hold.imageurl, options);
+		
+		convertView.setOnClickListener(new OnClickListener(){
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Toast.makeText(v.getContext(), productlist.get(position).getPdId().toString(), Toast.LENGTH_SHORT).show();
+			}
+			
+		});
+		
+		return convertView;
+	}
+	
+	static class Holder {
+		private TextView pdName, price;
+		private ImageView imageurl;
+	}
+	
+	/**
+     * ImageLoader 图片组件初始化
+     *
+     * @param context
+     */  
+    public static void initImageLoader(Context context) {
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(context).threadPriority(Thread.NORM_PRIORITY - 2).denyCacheImageMultipleSizesInMemory().discCacheFileNameGenerator(new Md5FileNameGenerator()).tasksProcessingOrder(QueueProcessingType.LIFO).writeDebugLogs().build();
+        ImageLoader.getInstance().init(config);  
+    }
+	
+}

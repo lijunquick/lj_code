@@ -1,0 +1,108 @@
+package com.asj.pls.adapter;
+
+import java.util.ArrayList;
+
+import com.asj.pls.R;
+import com.asj.pls.activity.PdetailActivity;
+import com.asj.pls.info.PdInfo;
+import com.asj.pls.util.ImageUtils;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.View.OnClickListener;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+
+/**
+ * 首页商品列表适配器
+ *
+ */
+
+public class IndexPdAdapter extends BaseAdapter {
+
+	public Integer type;
+	
+	private ArrayList<PdInfo> pdList;
+	
+	private Context context;
+	
+	public ImageLoader imageLoader = ImageLoader.getInstance();
+
+	public DisplayImageOptions options;
+	
+	public IndexPdAdapter(Context context, ArrayList<PdInfo> pdList, Integer type) {
+		this.type = type;
+		this.pdList = pdList;
+		this.context = context;
+		options = new DisplayImageOptions.Builder().showImageForEmptyUri(R.drawable.default_pd_image).showImageOnFail(R.drawable.default_pd_image).cacheInMemory(true).cacheOnDisc(true).bitmapConfig(Bitmap.Config.RGB_565).build();
+		ImageUtils.initImageLoader(context);
+	}
+
+	@Override
+	public int getCount() {
+		// TODO Auto-generated method stub
+		if(pdList == null){
+			return 0;
+		}
+		return pdList.size();
+	}
+
+	@Override
+	public Object getItem(int position) {
+		// TODO Auto-generated method stub
+		if(pdList != null){
+			return null;
+		}
+		return pdList.get(position);
+	}
+
+	@Override
+	public long getItemId(int position) {
+		// TODO Auto-generated method stub
+		return position;
+	}
+
+	@Override
+	public View getView(final int position, View convertView, ViewGroup parent) {
+		// TODO Auto-generated method stub
+		final Holder hold;
+		if (convertView == null) {
+			hold = new Holder();
+			convertView = View.inflate(context, R.layout.item_index_pd, null);
+			hold.pdName = (TextView) convertView.findViewById(R.id.index_pd_name);
+			hold.price = (TextView) convertView.findViewById(R.id.index_pd_price);
+			hold.imageurl = (ImageView) convertView.findViewById(R.id.index_pd_image);
+			convertView.setTag(hold);
+		} else {
+			hold = (Holder) convertView.getTag();
+		}
+		hold.pdName.setText(pdList.get(position).getPdName());
+		hold.price.setText(pdList.get(position).getPrice());
+		imageLoader.displayImage(pdList.get(position).getImageurl(), hold.imageurl, options);
+		if(type == 0){
+			convertView.setOnClickListener(new OnClickListener(){
+				@Override
+				public void onClick(View v) {
+					// TODO Auto-generated method stub
+					Intent intent = new Intent(context,PdetailActivity.class);
+					context.startActivity(intent);
+				}
+			});
+		}
+		return convertView;
+	}
+	
+	static class Holder {
+		private TextView pdName, price;
+		private ImageView imageurl;
+	}
+    
+}

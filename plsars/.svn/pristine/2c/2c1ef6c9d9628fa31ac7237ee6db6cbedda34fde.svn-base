@@ -1,0 +1,58 @@
+package com.asj.pls.activity;
+
+import com.asj.pls.R;
+import com.asj.pls.util.SPUtils;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.view.View;
+import android.view.Window;
+import android.view.View.OnClickListener;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+public class LocationActivity extends Activity implements OnClickListener{
+
+	/** 
+     * 返回
+     */
+    private ImageView backImageLoc;
+    
+    /** 
+     * 当前定位
+     */
+    private TextView currentLoc;
+    
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		setContentView(R.layout.activity_location);
+		initViews();
+	}
+	
+	/** 
+     * 在这里获取到每个需要用到的控件的实例，并给它们设置好必要的点击事件。 
+     */  
+    private void initViews() {
+    	
+    	
+    	backImageLoc = (ImageView)findViewById(R.id.back_index_location);
+    	currentLoc = (TextView)findViewById(R.id.current_location);
+    	
+    	currentLoc.setText((String)SPUtils.get("isLocation", "请选择..", this));
+    	
+    	backImageLoc.setOnClickListener(this);
+    }
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		switch(v.getId()){
+		case R.id.back_index_location:
+			this.finish();
+			this.overridePendingTransition(R.anim.push_current, R.anim.push_up_out);
+			break;
+		}
+	}
+}

@@ -1,0 +1,66 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+
+    <RelativeLayout
+        android:id="@+id/fillSingle_pay_head"
+    	android:layout_width="match_parent"
+    	android:layout_height="40dp"
+   		android:background="@drawable/pls_back_title" >
+    
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="@color/pls_white"
+            android:gravity="center"
+            android:textSize="15.0sp"
+            android:text="请选择支付方式" />
+
+	</RelativeLayout>
+	
+    <LinearLayout
+		android:id="@+id/pay_online"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:paddingBottom="8dp"
+		android:paddingTop="8dp"
+		android:background="@drawable/my_tab_background"
+		android:layout_below="@+id/fillSingle_pay_head">
+
+		<TextView
+		    android:id="@+id/pay_online_text"
+			android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+			android:drawableRight="@drawable/pay_selected"
+			android:gravity="center_vertical"
+			android:paddingRight="8dp"
+			android:paddingLeft="10dp"
+			android:textSize="13.0sp"
+			android:text="在线支付" />
+	</LinearLayout>
+	
+    <LinearLayout
+		android:id="@+id/pay_cod"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="8dp"
+		android:paddingTop="8dp"
+        android:background="@drawable/my_tab_background"
+        android:layout_below="@+id/pay_online">
+
+		<TextView
+		    android:id="@+id/pay_cod_text"
+			android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableRight="@drawable/pay_unselected"
+            android:gravity="center_vertical"
+            android:paddingLeft="10dp"
+            android:paddingRight="8dp"
+            android:textSize="13.0sp"
+            android:text="货到付款" />
+		
+	</LinearLayout>
+	
+</RelativeLayout>

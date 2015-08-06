@@ -1,0 +1,92 @@
+package com.asj.pls.fragment;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.ListView;
+
+import com.asj.pls.R;
+import com.asj.pls.adapter.cart.CartAdapter;
+
+public class MyTabFragmentTwo extends Fragment{
+	private View cartLayout;
+	private ListView listView;
+	private CartAdapter cartAdapter;
+	private Context context;
+	private List<Map<String,Object>> dates;
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {  
+		cartLayout = inflater.inflate(R.layout.layout_cart, container, false);
+        listView=(ListView) cartLayout.findViewById(R.id.id_listview_cart_products);
+        listView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        listView.setOnItemLongClickListener(new OnItemLongClickListener() {
+
+			@Override
+			public boolean onItemLongClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				// TODO Auto-generated method stub
+				System.out.println(id);
+				
+				new AlertDialog.Builder(context)
+					.setTitle("请选择")
+					.setMessage("请确认是否删除商品")
+					.setPositiveButton("删除", new MyOnClickListener(position))
+					.setNegativeButton("返回", new OnClickListener() {
+						
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							// TODO Auto-generated method stub
+							System.out.println("取消删除");
+						}
+					})
+					.show();
+				
+				
+				return false;
+			}
+		});
+        context=cartLayout.getContext();
+        dates=new ArrayList<Map<String,Object>>();
+        for(int i=0;i<10;i++){
+        	Map<String,Object> map=new HashMap<String,Object>();
+        	map.put("price", 10+i);
+        	if(i%2==0){
+        		map.put("count", 2);
+        	}else{
+        		map.put("count", 1);
+        	}
+        	dates.add(map);
+        }
+        cartAdapter=new CartAdapter(context, null, null, dates);
+        listView.setAdapter(cartAdapter);
+        return cartLayout;  
+    }
+	class MyOnClickListener implements  DialogInterface.OnClickListener{
+		int position;
+		public MyOnClickListener(int position){
+			this.position=position;
+		}
+		@Override
+		public void onClick(DialogInterface dialog, int which) {
+			// TODO Auto-generated method stub
+//			System.out.println("s删除商品");;
+			cartAdapter.delListItem(position);
+//			listView.setAdapter(cartAdapter);
+			cartAdapter.notifyDataSetChanged();  
+			
+		}
+		
+	}
+}

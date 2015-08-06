@@ -1,0 +1,98 @@
+package com.asj.pls.activity;
+
+import com.asj.pls.R;
+import com.asj.pls.util.DialogUtils;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.Dialog;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.view.Gravity;
+import android.view.Window;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Toast;
+
+public class PdetailActivity extends Activity {
+
+	
+	/**
+	 * 删除按钮的引用
+	 */
+    private WebView myWebView;
+    
+    /**
+	 * 商品地址
+	 */
+    private String pdurl;
+    
+    /** 
+     * 加载控件
+     */
+    private Dialog dialog;
+    
+	@SuppressLint({"JavascriptInterface","SetJavaScriptEnabled"})
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		setContentView(R.layout.activity_pdetail);
+		
+		myWebView = (WebView)findViewById(R.id.webview_pd);
+		
+		Intent intent = getIntent();
+		pdurl = intent.getStringExtra("pdUrl");
+		
+		WebSettings settings = myWebView.getSettings();
+		settings.setJavaScriptEnabled(true);
+		settings.setDefaultTextEncodingName("utf-8"); 
+		myWebView.addJavascriptInterface(new JsInteration(), "control");
+		myWebView.setWebViewClient(new WebViewClient() {
+			
+			@Override
+			public void onPageStarted(WebView view, String url, Bitmap favicon) {
+				dialog = DialogUtils.createLoadingDialog(view.getContext(), "页面加载中...");
+                dialog.show();
+			}
+			
+			@Override
+			public void onPageFinished(WebView view, String url) {
+				super.onPageFinished(view, url);
+				dialog.dismiss();
+			}
+	          
+		});
+		myWebView.loadUrl(pdurl);
+	}
+	
+	public class JsInteration {
+	      
+	      @JavascriptInterface
+	      public void addCart(Long id, Integer num) {
+	    	  showToast("加入购物车成功");
+	          pdFinish();
+	      }
+	      
+	      @JavascriptInterface
+	      public void closedPage() {
+	    	  pdFinish();
+	      }
+	}
+	
+	private void pdFinish(){
+		this.finish();
+	}
+	
+	/**
+	  * 信息显示
+	  */
+   private void showToast(String info){
+   		Toast toast = Toast.makeText(getApplicationContext(), info, Toast.LENGTH_SHORT);
+		toast.setGravity(Gravity.CENTER, 0, 0);
+		toast.show();
+   }
+}

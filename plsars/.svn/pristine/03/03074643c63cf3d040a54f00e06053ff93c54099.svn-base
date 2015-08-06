@@ -1,0 +1,61 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:id="@+id/address_head_line"
+    	android:layout_width="match_parent"
+    	android:layout_height="48dp"
+   		android:background="@drawable/pls_back_title" >
+    
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="@color/pls_white"
+            android:gravity="center"
+            android:textSize="15.0sp"
+            android:text="管理收货地址" />
+
+        <ImageView
+            android:id="@+id/exit_address"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:padding="10dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/pls_index_back" />
+        
+        <TextView
+            android:id="@+id/add_address"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:textColor="@color/pls_white"
+            android:padding="5dp"
+            android:gravity="center"
+            android:textSize="12.0sp"
+            android:text="+新建" />
+        
+	</RelativeLayout>
+
+    
+    <TextView
+        android:id="@+id/address_line"
+		android:layout_width="match_parent"
+		android:layout_height="1.5dp"
+		android:layout_below="@+id/address_head_line"
+		android:layout_marginTop="10dp"
+		android:background="#D6D6D6"/>
+    
+    <ListView
+	    android:id="@+id/address_ListView"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_below="@+id/address_line"
+	    android:fadingEdge="none"
+	    android:divider="@null"
+	    android:overScrollMode="never"
+	    android:scrollbars="none"/>
+</RelativeLayout>

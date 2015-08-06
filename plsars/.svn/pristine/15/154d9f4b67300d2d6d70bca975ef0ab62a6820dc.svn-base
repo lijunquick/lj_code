@@ -1,0 +1,483 @@
+package com.asj.pls.fragment;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.asj.pls.R;
+import com.asj.pls.activity.LocationActivity;
+import com.asj.pls.activity.SearchActivity;
+import com.asj.pls.adapter.IndexAdapter;
+import com.asj.pls.adapter.ViewPagerAdapter;
+import com.asj.pls.info.CateInfo;
+import com.asj.pls.info.PdInfo;
+import com.asj.pls.util.JSONUtils;
+import com.asj.pls.util.LOGUtils;
+import com.asj.pls.util.SPUtils;
+import com.baidu.location.BDLocation;
+import com.baidu.location.BDLocationListener;
+import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
+import com.baidu.location.LocationClientOption.LocationMode;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.FrameLayout.LayoutParams;
+import android.widget.ImageView.ScaleType;
+
+public class MyTabFragmentOne extends Fragment implements OnClickListener{
+
+	/** 
+     * 首页
+     */
+	private View indexLayout;
+	
+	/** 
+     * 位置状态栏
+     */
+    private TextView addressText;
+    
+    /** 
+     * 定位按钮
+     */
+    private Button locationBtn;
+	
+    /** 
+     * 商品搜索图标
+     */
+    private ImageView searchPdImage;
+    
+    /** 
+	  * 定位核心sdk
+	  */
+	private LocationClient mLocationClient;
+	
+	/** 
+     * 定义ViewPager对象
+     */
+	private ViewPager viewPager;
+		
+	/** 
+     * 定义ViewPager适配器
+     */
+	private ViewPagerAdapter vpAdapter;
+	
+	/** 
+     * 定义一个ArrayList来存放View
+     */
+    private ArrayList<View> views;
+    
+    /** 
+     * 放圆点的View的list
+     */
+    private List<View> dotViewsList;
+    
+    /** 
+     * 记录当前选中位置
+     */
+    private int currentIndex;
+    
+    /** 
+     * 记录当前选中位置
+     */
+    private boolean isAutoPlay = true;
+    
+    /** 
+     * 定时任务
+     */
+    private ScheduledExecutorService scheduledExecutorService;
+    
+    /** 
+     * 首页列表控件
+     */
+    private ListView indexListView;
+    
+    /** 
+     * 首页商品类别及商品
+     */
+    private ArrayList<CateInfo> catelist = new ArrayList<CateInfo>();
+    
+    /** 
+     * 商品分类适配器
+     */
+	private IndexAdapter indexAdapter;
+	
+	/** 
+     * 未定位显示布局
+     */
+	private LinearLayout unLoction;
+	
+	/** 
+     * 首页轮播下空间 我想要、热销榜、分类
+     */
+	private TextView want,hot,cate;
+	
+	private float dowxX = 0f;
+	
+	private float upX = 0f;
+    /** 
+     * 图片资源
+     */
+    private String[] imageUrls = {"http://image.asj.com/o2oImageAd/2015/5/24/20/08232514324702051688406185512.jpg","http://image.asj.com/o2oImageAd/2015/5/24/20/08272714324704473547639274908.jpg","http://image.asj.com/o2oImageAd/2015/5/25/10/10483914325221197047443989444.jpg"};
+	 
+    private String dataJson = "{'data':[{'cateId':1,'cateName':'奶酒饮料','productlist':[{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20155231439474138233500374.jpg','pdId':1,'pdName':'景田 百岁山矿泉水 570ml','price':'￥2.50'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20156281149399291374893634.jpg','pdId':2,'pdName':'伊利 安慕希利乐钻酸奶 205g','price':'￥5.50'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20155231526499799528279998.jpg','pdId':3,'pdName':'康好 芒果汁饮料 828ml/瓶','price':'￥9.90'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/2015528163734718045005125.jpg','pdId':4,'pdName':'崂山 精品啤酒 600ml/瓶','price':'￥2.90'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/2015627154151804598541129.jpg','pdId':5,'pdName':'农夫山泉 矿泉水 4L','price':'￥7.50'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/2015524202514799556709621.jpg','pdId':6,'pdName':'崂山 冰镇精品啤酒 600ml/瓶','price':'￥2.90'}]},{'cateId':2,'cateName':'粮油副食','productlist':[{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/2015627113459418927456780.jpg','pdId':2,'pdName':'龙大 调和油 5L','price':'￥69.80'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20156271555206795637847504.jpg','pdId':3,'pdName':'胖子 酸菜鱼佐料 300g','price':'￥7.80'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/2015628161659386184733740.jpg','pdId':4,'pdName':'甘汁园 纯正红糖 350g','price':'￥5.70'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20156271031569276028322855.jpg','pdId':5,'pdName':'峪林 包子饺子料 35g','price':'￥2.90'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20156301448586048482123079.jpg','pdId':6,'pdName':'鲁花 纯正花生油 1L','price':'￥35.90'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/201569141014118994702510.jpg','pdId':7,'pdName':'红菱花 味精 100g/袋','price':'￥2.30'}]},{'cateId':3,'cateName':'休闲食品','productlist':[{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20156281017367793285427537.jpg','pdId':3,'pdName':'达利园 软面包香奶味 18个 360g','price':'￥9.50'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20156271724104617968312061.jpg','pdId':4,'pdName':'众望 小麻花 鸡汁 130g','price':'￥3.60'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20156301458537911177538609.jpg','pdId':5,'pdName':'绿箭 柠檬草薄荷味口香糖 40粒/64g','price':'￥8.50'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20155231456419364358480384.jpg','pdId':6,'pdName':'炫迈 水密西瓜味无糖口香糖 21.6g/12片','price':'￥5.90'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/201552314518802302964292.jpg','pdId':7,'pdName':'百醇 牛奶味注心饼干 48g','price':'￥5.90'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/2015523144994338920094282.jpg','pdId':8,'pdName':'徐福记 香酥芝麻味沙琪玛 311g','price':'￥8.90'}]},{'cateId':4,'cateName':'新鲜水果','productlist':[{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20156291643375466617340175.jpg','pdId':4,'pdName':'早天下 青提约1斤','price':'￥5.80'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/201565100148696148492325.jpg','pdId':5,'pdName':'早天下 皇冠梨 约2斤','price':'￥9.00'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20156301539142722378482597.jpg','pdId':6,'pdName':'早天下 沂源红富士苹果70# 3斤装 约9-10个','price':'￥9.00'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20156595771790015738348.jpg','pdId':7,'pdName':'早天下 柠檬 约1斤','price':'￥7.50'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20155241650177622312848725.jpg','pdId':8,'pdName':'早天下 沂源富士苹果80# 5斤约11-12个','price':'￥17.90'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20156595950765574798888.jpg','pdId':9,'pdName':'早天下 绿宝甜瓜 约3斤','price':'￥5.40'}]},{'cateId':5,'cateName':'田园蔬菜','productlist':[{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20155311623581975085981911.jpg','pdId':5,'pdName':'早天下 胡萝卜 约1斤','price':'￥1.60'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/2015524171319514455836208.jpg','pdId':6,'pdName':'早天下 金针菇 约1斤','price':'￥4.00'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20155241948392294263354034.jpg','pdId':7,'pdName':'早天下 油麦菜 约1斤','price':'￥1.70'}]}],'errorInfo':'请求成功','errorNo':0}";
+    
+    
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {  
+        indexLayout = inflater.inflate(R.layout.layout_index, container, false);
+        
+        unLoction = (LinearLayout)indexLayout.findViewById(R.id.index_body_unlogin);
+        addressText = (TextView)indexLayout.findViewById(R.id.search_address_txt);
+        searchPdImage = (ImageView)indexLayout.findViewById(R.id.index_search_image);
+        locationBtn = (Button)indexLayout.findViewById(R.id.index_locatin_btn);
+        indexListView = (ListView)indexLayout.findViewById(R.id.index_ListView);
+        indexAdapter = new IndexAdapter(getActivity(), catelist);
+        
+		LinearLayout headerView = (LinearLayout) inflater.inflate(R.layout.layout_index_header, null);
+        // 设置内边距，正好距离顶部为一个负的整个布局的高度，正好把头部隐藏
+        headerView.setPadding(0, -1 * headerView.getMeasuredHeight(), 0, 0);
+        // 重绘一下
+        headerView.invalidate();
+        indexListView.addHeaderView(headerView);
+        indexListView.setAdapter(indexAdapter);
+        
+        want = (TextView)indexLayout.findViewById(R.id.index_i_want);
+        hot = (TextView)indexLayout.findViewById(R.id.index_hot_buy);
+        cate = (TextView)indexLayout.findViewById(R.id.index_cate_go);
+        		
+        viewPager = (ViewPager) indexLayout.findViewById(R.id.slide_show_viewPager);//实例化ViewPager
+    	viewPager.setFocusable(true);
+        
+        if(!isLocation()){//网络状态正常且第一次定位
+			mLocationClient = new LocationClient(indexLayout.getContext().getApplicationContext());//实例化LocationClient类
+			mLocationClient.registerLocationListener(new MyLocationListener());//注册监听函数
+			this.InitLocation();//设置定位参数
+			mLocationClient.start();
+        }else{
+        	String currentAddress = (String) SPUtils.get("isLocation", "请选择..", getActivity());
+        	if(!currentAddress.equals("请选择..")){
+        		currentAddress = "送至   " + currentAddress;
+        	}
+        	addressText.setText(currentAddress);
+		}
+        
+        want.setOnClickListener(this);
+        hot.setOnClickListener(this);
+        cate.setOnClickListener(this);
+        locationBtn.setOnClickListener(this);
+        addressText.setOnClickListener(this);
+        searchPdImage.setOnClickListener(this);
+        return indexLayout;  
+    }
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		Intent intent = null;
+		switch(v.getId()){
+		case R.id.index_search_image://商品搜索
+			intent = new Intent(getActivity(),SearchActivity.class);
+			startActivity(intent);
+			getActivity().overridePendingTransition(R.anim.push_right_in, R.anim.push_current);
+			break;
+		case R.id.index_i_want://我常买
+			Toast.makeText(v.getContext(), "我常买", Toast.LENGTH_SHORT).show();
+			break;
+		case R.id.index_hot_buy://热销榜
+			Toast.makeText(v.getContext(), "热销榜", Toast.LENGTH_SHORT).show();
+			break;
+		case R.id.index_cate_go://分类
+			Toast.makeText(v.getContext(), "分类", Toast.LENGTH_SHORT).show();
+			break;
+		default://定位
+			intent = new Intent(getActivity(),LocationActivity.class);
+			startActivityForResult(intent,1);
+			getActivity().overridePendingTransition(R.anim.push_up_in, R.anim.push_current);
+		}
+	}
+	
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        addressText.setText("送至   " + SPUtils.get("isLocation", "请选择..", getActivity()));
+        String id = data.getExtras().getString("result");
+        String exitId = (String) SPUtils.get("shop_id", "0", getActivity());
+        
+        if(!id.equals("0") && !id.equals(exitId)){
+        	SPUtils.put("shop_id", id, getActivity());
+        	initSlideShow(null);
+        }
+    }
+	
+	/**
+	  * 定位
+	  */
+	 private void InitLocation(){
+		LocationClientOption option = new LocationClientOption();
+		option.setAddrType("all");
+		option.setLocationMode(LocationMode.Hight_Accuracy);//设置定位模式
+		option.setCoorType("gcj02");//返回的定位结果是百度经纬度，默认值gcj02
+		option.setScanSpan(5000);//设置发起定位请求的间隔时间为5000ms
+		option.setIsNeedAddress(true);
+		mLocationClient.setLocOption(option);
+	}
+	    
+	/**
+	 * 实现实位回调监听
+	 */
+	public class MyLocationListener implements BDLocationListener {
+
+		@Override
+		public void onReceiveLocation(BDLocation location) {
+			//Receive Location
+			if(location != null && location.getStreet() != null){
+				SPUtils.put("isLocation", location.getStreet(), getActivity());
+				LOGUtils.d("location", location.getStreet());
+				addressText.setText("送至   " + location.getStreet());
+			}else{
+				addressText.setText("请选择..");
+			}
+			mLocationClient.stop();
+		}
+	}
+		
+	/** 
+	 * 判断是否第一次定位
+	 */
+	private boolean isLocation() {
+		boolean isFirstRun = SPUtils.contains("isLocation",getActivity());
+		return isFirstRun;
+	}
+	
+	/** 
+	 * 动作定位
+	 */
+	public void selfLocation(){
+		mLocationClient.start();
+	}
+	
+	/** 
+	 * 加载轮播
+	 */
+	public void initSlideShow(Long shopId){
+		
+		catelist.clear();
+		unLoction.setVisibility(View.GONE);
+		indexListView.setVisibility(View.VISIBLE);
+		searchPdImage.setVisibility(View.VISIBLE);
+		new Thread(new Runnable() {
+        	
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				mHandler.obtainMessage().sendToTarget();
+			}
+			
+        }).start();
+		
+		//初始化数据
+		views = new ArrayList<View>();
+		dotViewsList = new ArrayList<View>();
+        LinearLayout dotLayout = (LinearLayout)indexLayout.findViewById(R.id.dotLayout);
+        dotLayout.removeAllViews();
+        
+    	for (int i = 0; i < imageUrls.length; i++) {
+    		ImageView view = new ImageView(getActivity());
+    		if(i==0) view.setBackgroundResource(R.drawable.default_banner);//给一个默认图
+    		view.setTag(imageUrls[i]);
+    		view.setScaleType(ScaleType.FIT_XY);
+	        views.add(view);
+	        
+	        ImageView dotView = new ImageView(getActivity());
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+            params.leftMargin = 4;
+            params.rightMargin = 4;
+            dotLayout.addView(dotView, params);
+            dotViewsList.add(dotView);
+    	}
+    	vpAdapter = new ViewPagerAdapter(views,getActivity());//实例化ViewPager适配器
+    	this.vpAdapter.notifyDataSetChanged();
+	    viewPager.setAdapter(vpAdapter);//设置数据
+	    if(isAutoPlay){
+            startPlay();
+        }
+	    
+	    viewPager.setOnTouchListener(new OnTouchListener() {
+			
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				// TODO Auto-generated method stub
+				
+				
+				
+				switch(event.getAction()){
+				case MotionEvent.ACTION_DOWN:
+					dowxX = event.getX();
+					viewPager.getParent().requestDisallowInterceptTouchEvent(true);
+					break;
+				case MotionEvent.ACTION_MOVE:
+					viewPager.getParent().requestDisallowInterceptTouchEvent(true);
+					break;
+				case MotionEvent.ACTION_UP:
+					upX = event.getX();
+					if(dowxX - upX < 5 && dowxX - upX > -5){
+						Toast.makeText(v.getContext(), "点击轮播图片", Toast.LENGTH_SHORT).show();
+					}
+					viewPager.getParent().requestDisallowInterceptTouchEvent(false);
+					break;
+				case MotionEvent.ACTION_CANCEL:
+					viewPager.getParent().requestDisallowInterceptTouchEvent(false);
+					break;
+				}
+				return false;
+			}
+		});
+	    
+	    viewPager.setOnPageChangeListener(new OnPageChangeListener() {
+			
+			@Override
+			public void onPageSelected(int pos) {
+				// TODO Auto-generated method stub
+				currentIndex = pos;
+	            for(int i=0;i < dotViewsList.size();i++){
+	                if(i == pos){
+	                	((View)dotViewsList.get(pos)).setBackgroundResource(R.drawable.point_select);
+	                }else {
+	                    ((View)dotViewsList.get(i)).setBackgroundResource(R.drawable.point_normal);
+	                }
+	            }
+			}
+			
+			@Override
+			public void onPageScrolled(int arg0, float arg1, int arg2) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void onPageScrollStateChanged(int arg0) {
+				// TODO Auto-generated method stub
+				switch (arg0) {
+	            case 1:// 手势滑动，空闲中
+	                isAutoPlay = false;
+	                break;
+	            case 2:// 界面切换中
+	                isAutoPlay = true;
+	                break;
+	            case 0:// 滑动结束，即切换完毕或者加载完毕
+	                // 当前为最后一张，此时从右向左滑，则切换到第一张
+	                if (viewPager.getCurrentItem() == viewPager.getAdapter().getCount() - 1 && !isAutoPlay) {
+	                    viewPager.setCurrentItem(0);
+	                }
+	                // 当前为第一张，此时从左向右滑，则切换到最后一张
+	                else if (viewPager.getCurrentItem() == 0 && !isAutoPlay) {
+	                    viewPager.setCurrentItem(viewPager.getAdapter().getCount() - 1);
+	                }
+	                break;
+	            }
+			}
+		});
+	    
+	    
+	}
+
+	
+	/**
+     * 开始轮播图切换
+     */
+    private void startPlay(){
+        scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+        scheduledExecutorService.scheduleAtFixedRate(new SlideShowTask(), 1, 4, TimeUnit.SECONDS);
+    }
+    
+    /**
+     * 停止轮播图切换
+     */
+    private void stopPlay(){
+        scheduledExecutorService.shutdown();
+    }
+    
+    /**
+     *执行轮播图切换任务
+     *
+     */
+    private class SlideShowTask implements Runnable{
+    	
+        @Override
+        public void run() {
+            // TODO Auto-generated method stub
+            synchronized (viewPager) {
+            	currentIndex = (currentIndex+1)%views.size();
+                handler.obtainMessage().sendToTarget();
+            }
+        }
+        
+    }
+    
+    private Handler handler = new Handler(){
+    	
+        @Override  
+        public void handleMessage(Message msg) {
+            // TODO Auto-generated method stub
+            super.handleMessage(msg);
+            viewPager.setCurrentItem(currentIndex);
+        }
+        
+    };
+    
+    private Handler mHandler = new Handler() {
+		public void handleMessage(android.os.Message msg) {
+			try {
+				JSONArray array = JSONUtils.parseJsonMulti(dataJson, "data");
+				if(array != null && array.length() > 0){
+					for(int i = 0; i < array.length(); i++){
+						JSONObject object = array.getJSONObject(i);
+						CateInfo cateItem = new CateInfo();
+						ArrayList<PdInfo> productlist = new ArrayList<PdInfo>();
+						JSONArray pdArray = object.getJSONArray("productlist");
+						for(int j = 0; j < pdArray.length(); j++){
+							JSONObject pdObject = pdArray.getJSONObject(j);
+							PdInfo pd = new PdInfo();
+							pd.setPdId(pdObject.getLong("pdId"));
+							pd.setPdName(pdObject.getString("pdName"));
+							pd.setPrice(pdObject.getString("price"));
+							pd.setImageurl(pdObject.getString("imageurl"));
+							productlist.add(pd);
+						}
+						cateItem.setCateId(object.getLong("cateId"));
+						cateItem.setCateName(object.getString("cateName"));
+						cateItem.setProductlist(productlist);
+						catelist.add(cateItem);
+					}
+					indexAdapter.notifyDataSetChanged();
+				}
+			} catch (JSONException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+			}
+		};
+		
+	};
+}

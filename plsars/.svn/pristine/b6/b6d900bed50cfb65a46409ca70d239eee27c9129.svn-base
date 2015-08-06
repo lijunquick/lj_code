@@ -1,0 +1,237 @@
+package com.asj.pls.activity;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.asj.pls.R;
+import com.asj.pls.adapter.FragmentPageAdapter;
+import com.asj.pls.fragment.MyTabFragmentFour;
+import com.asj.pls.fragment.MyTabFragmentOne;
+import com.asj.pls.fragment.MyTabFragmentThree;
+import com.asj.pls.fragment.MyTabFragmentTwo;
+import com.asj.pls.util.DialogUtils;
+
+import android.app.Dialog;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.view.View;
+import android.view.Window;
+import android.view.View.OnClickListener;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+public class HomeActivity extends FragmentActivity implements OnClickListener,OnPageChangeListener{
+	
+	/** 
+     * 用于展示首页、分类、订单、个人
+     */  
+    private MyTabFragmentOne indexFragment;  
+  
+    private MyTabFragmentTwo cartFragment;  
+  
+    private MyTabFragmentThree ordersFragment;  
+  
+    private MyTabFragmentFour myFragment;
+    
+	/** 
+     * 首页、购物车、订单、个人界面布局 
+     */  
+    private View indexLayout,cartyLayout,ordersLayout,myLayout;
+    
+    /** 
+     * 首页、购物车、订单、个人在Tab布局上显示图标的控件 
+     */
+    private ImageView indexImage,cartImage,ordersImage,myImage;
+    
+    /** 
+     * 首页、购物车、订单、个人在Tab布局上显示标题的控件 
+     */
+    private TextView indexText,cartText,ordersText,myText;
+    
+    /** 
+     * 加载控件
+     */
+	public static Dialog dialog;
+	
+	/** 
+     * 加载控件
+     */
+	private Boolean isFirst;
+	
+    /** 
+     * 底部导航栏
+     */
+    private LinearLayout titleBottomLine;
+
+	private List<Fragment> fragments;
+	
+	private ViewPager tabViewPager;
+	
+	private FragmentPageAdapter tabAdapter;
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		setContentView(R.layout.activity_home);
+		initViews();
+		FragmentManager fm = getSupportFragmentManager();
+		tabViewPager = (ViewPager) findViewById(R.id.content);
+		tabAdapter =  new FragmentPageAdapter(fm,fragments);
+		tabViewPager.setAdapter(tabAdapter);
+		tabViewPager.setOnPageChangeListener(this);
+        tabViewPager.setCurrentItem(0);
+        setTabSelection(0);
+	}
+	
+	/** 
+     * 在这里获取到每个需要用到的控件的实例，并给它们设置好必要的点击事件。 
+     */  
+    private void initViews() {
+    	
+    	fragments = new ArrayList<Fragment>();
+    	
+    	indexFragment = new MyTabFragmentOne();
+    	cartFragment = new MyTabFragmentTwo();
+    	ordersFragment = new MyTabFragmentThree();
+    	myFragment = new MyTabFragmentFour();
+    	fragments.add(indexFragment);//首页
+    	fragments.add(cartFragment);//购物车
+    	fragments.add(ordersFragment);//订单
+    	fragments.add(myFragment);//我的
+    	//初始化界面
+    	indexLayout = findViewById(R.id.index_layout);
+    	cartyLayout = findViewById(R.id.cart_layout);
+    	ordersLayout = findViewById(R.id.orders_layout);
+    	myLayout = findViewById(R.id.my_layout);
+    	//初始化图标
+    	indexImage = (ImageView) findViewById(R.id.index_image);
+    	cartImage = (ImageView) findViewById(R.id.cart_image);
+    	ordersImage = (ImageView) findViewById(R.id.orders_image);
+    	myImage = (ImageView) findViewById(R.id.my_image);
+    	//初始化标题
+        indexText = (TextView) findViewById(R.id.index_text);
+        cartText = (TextView) findViewById(R.id.category_text);
+        ordersText = (TextView) findViewById(R.id.orders_text);
+        myText = (TextView) findViewById(R.id.my_text);
+        //初始化底部
+        titleBottomLine = (LinearLayout)findViewById(R.id.bottom_bar);
+        //初始化监听
+        indexLayout.setOnClickListener(this);
+        cartyLayout.setOnClickListener(this);
+        ordersLayout.setOnClickListener(this);
+        myLayout.setOnClickListener(this);
+        
+        isFirst = true;
+    }
+
+	/**
+     * 根据传入的index参数来设置选中的tab页
+     *
+     * @param index
+     * 每个tab页对应的下标。0表示首页，1表示购物车，2表示订单，3表示我的
+     */  
+    private void setTabSelection(int index) {
+    	// 每次选中之前先清楚掉上次的选中状态
+    	clearSelection();
+    	switch (index) {
+    	case 0:
+    		// 当点击了首页tab时，选中第1个tab
+    		indexImage.setImageResource(R.drawable.tab_index_selected);
+            indexText.setTextColor(Color.parseColor("#3492e9"));
+    		break;
+        case 1:
+        	// 当点击了购物车tab时，选中第2个tab
+        	cartImage.setImageResource(R.drawable.tab_cart_selected);
+        	cartText.setTextColor(Color.parseColor("#3492e9"));
+        	break;
+        case 2:
+        	// 当点击了订单tab时，选中第3个tab
+        	ordersImage.setImageResource(R.drawable.tab_orders_selected);
+            ordersText.setTextColor(Color.parseColor("#3492e9"));
+            if(isFirst){
+            	dialog = DialogUtils.createLoadingDialog(ordersLayout.getContext(), "正在努力加载中...");
+                dialog.show();
+                ordersFragment.initOrdersList();//加载订单数据
+                isFirst = false;
+            }
+        	break;
+        case 3:
+        	// 当点击了我的tab时，选中第4个tab
+        	myImage.setImageResource(R.drawable.tab_my_selected);
+            myText.setTextColor(Color.parseColor("#3492e9"));
+        	break;
+    	}
+    }
+    
+    /** 
+     * 清除掉所有的选中状态。 
+     */  
+    private void clearSelection() {  
+        indexImage.setImageResource(R.drawable.tab_index);  
+        indexText.setTextColor(Color.parseColor("#82858b"));  
+        cartImage.setImageResource(R.drawable.tab_cart);  
+        cartText.setTextColor(Color.parseColor("#82858b"));  
+        ordersImage.setImageResource(R.drawable.tab_orders);  
+        ordersText.setTextColor(Color.parseColor("#82858b"));  
+        myImage.setImageResource(R.drawable.tab_my);  
+        myText.setTextColor(Color.parseColor("#82858b"));  
+    }
+    
+    @Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		switch (v.getId()) {
+		case R.id.index_layout:
+        	// 当点击了首页tab时，选中第1个tab
+			setTabSelection(0);
+			tabViewPager.setCurrentItem(0);
+            break;
+        case R.id.cart_layout:
+            // 当点击了购物车tab时，选中第2个tab
+        	setTabSelection(1);
+        	tabViewPager.setCurrentItem(1);
+            break;
+        case R.id.orders_layout:
+            // 当点击了订单tab时，选中第3个tab
+        	setTabSelection(2);
+        	tabViewPager.setCurrentItem(2);
+            break;
+        case R.id.my_layout:
+            // 当点击了我的tab时，选中第4个tab
+        	setTabSelection(3);
+        	tabViewPager.setCurrentItem(3);
+            break;
+        case R.id.My_list_orders:
+        	//我的订单
+        	setTabSelection(2);
+        	tabViewPager.setCurrentItem(2);
+        	break;
+		}
+	}
+
+	@Override
+	public void onPageScrollStateChanged(int arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onPageScrolled(int arg0, float arg1, int arg2) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onPageSelected(int index) {
+		// TODO Auto-generated method stub
+		setTabSelection(index);
+	}
+	
+}

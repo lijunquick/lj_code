@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:id="@+id/location_before"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:orientation="vertical">
+		
+	    <LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="48dp"
+			android:orientation="horizontal" 
+			android:background="@drawable/pls_back_title">
+	
+			<ImageView
+				android:id="@+id/back_index_location"
+				android:layout_width="wrap_content"
+		        android:layout_height="match_parent"
+		        android:scaleType="centerInside"
+		        android:src="@drawable/pls_index_back_loc"
+		        android:padding="15dp" />
+	
+			<AutoCompleteTextView
+			    android:id="@+id/location_condition"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            style="@style/search_edittext_style"
+	            android:layout_weight="5"
+	            android:layout_gravity="center_vertical"
+	            android:background="@android:color/white"
+	            android:hint="小区、街道"
+			    android:textCursorDrawable="@null">
+			    
+			</AutoCompleteTextView>
+			
+			<TextView
+	            android:id="@+id/location_sure"
+	            android:layout_width="wrap_content"
+	            android:layout_height="match_parent"
+	            android:layout_gravity="center_vertical"
+	            android:gravity="center"
+	            android:layout_weight="0.5"
+	            android:textColor="@color/pls_white"
+	            android:textSize="15sp"
+	            android:text="确定"/>
+		</LinearLayout>
+		
+	    <RelativeLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="vertical" 
+			android:layout_marginTop="10dp">
+	        
+	        <Button   
+			    android:id="@+id/location_here" 
+			    android:layout_width="match_parent"   
+			    android:layout_height="wrap_content"   
+			    android:background="@drawable/selector_grey_dark_corners_button"
+			    android:layout_centerInParent="true"
+			    android:textColor="@color/pls_bg"
+			    android:textSize="15sp"
+			    android:text="点击定位到当前地点"/>
+	
+	        <ImageView
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:layout_alignParentLeft="true"
+	            android:layout_centerVertical="true"
+	            android:src="@drawable/pls_loc" 
+	            android:layout_marginLeft="55dp"/>
+	        
+		</RelativeLayout>
+	</LinearLayout>
+	
+    <LinearLayout
+        android:id="@+id/location_after"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:orientation="vertical"
+		android:visibility="gone">
+	    
+        <RelativeLayout
+			android:layout_width="match_parent"
+			android:layout_height="48dp"
+			android:orientation="horizontal" 
+			android:background="@drawable/pls_back_title">
+	
+			<ImageView
+				android:id="@+id/back_index_location_after"
+				android:layout_width="wrap_content"
+		        android:layout_height="match_parent"
+		        android:scaleType="centerInside"
+		        android:src="@drawable/pd_esc"
+		        android:padding="10dp" />
+			
+			<TextView
+			    android:id="@+id/location_after_address"
+	            android:layout_width="wrap_content"
+	            android:layout_height="match_parent"
+	            android:gravity="center"
+	            android:layout_centerInParent="true"
+	            android:textColor="@color/pls_white"
+	            android:textSize="15sp"
+	            android:singleLine="true"
+	            android:ellipsize="end"
+	            android:text="附件区域"/>
+		</RelativeLayout>
+		
+        <LinearLayout
+        	android:layout_width="match_parent"
+        	android:layout_height="wrap_content"
+        	android:orientation="vertical">
+            
+            <LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="30dp"
+				android:background="@color/gray_bg">
+				
+	            <TextView
+	                android:id="@+id/location_num"
+		            android:layout_width="wrap_content"
+		            android:layout_height="match_parent"
+		            android:gravity="center"
+		            android:textColor="@color/pls_bg"
+		            android:textSize="12sp"
+		            android:layout_marginLeft="10dp"/>
+            
+			</LinearLayout>
+            
+            <ScrollView
+                android:layout_width="match_parent"
+		        android:layout_height="match_parent"
+		        android:overScrollMode="never">
+		        
+	            <LinearLayout
+	                android:id="@+id/location_address_list"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:orientation="vertical">
+				</LinearLayout>
+				
+            </ScrollView>
+        </LinearLayout>
+	</LinearLayout>
+</LinearLayout>

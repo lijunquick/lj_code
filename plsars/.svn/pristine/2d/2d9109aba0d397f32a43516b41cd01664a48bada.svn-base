@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="backColor">#2000</color>
+    <color name="gray_bg">#ffeeeeec</color>
+    <color name="pls_bg">#271553</color>
+    <color name="pls_white">#FFF</color>
+    <color name="gray_bg_text">#ff888888</color>
+</resources>

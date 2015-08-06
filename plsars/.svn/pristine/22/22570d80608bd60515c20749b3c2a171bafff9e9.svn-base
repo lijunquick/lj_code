@@ -1,0 +1,15 @@
+package com.asj.pls.activity;
+
+import com.asj.pls.R;
+
+import android.app.Activity;
+import android.os.Bundle;
+
+public class PromoteActivity extends Activity {
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_promote);
+	}
+}

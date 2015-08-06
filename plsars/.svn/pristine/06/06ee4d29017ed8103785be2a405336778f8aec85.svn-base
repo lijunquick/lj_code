@@ -1,0 +1,176 @@
+package com.asj.pls.activity;
+
+import java.util.ArrayList;
+
+import com.asj.pls.R;
+import com.asj.pls.adapter.ViewPagerAdapter;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.view.View;
+import android.view.Window;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+
+public class GuidanceActivity extends Activity implements OnPageChangeListener{
+
+	//定义ViewPager对象
+	private ViewPager viewPager;
+	
+	//定义ViewPager适配器
+    private ViewPagerAdapter vpAdapter;
+	
+    //定义一个ArrayList来存放View
+    private ArrayList<View> views;
+    
+    //引导图片资源
+    private static final int[] pics = {R.drawable.guide1,R.drawable.guide2,R.drawable.guide3};
+    
+    //底部小点的图片
+    private ImageView[] points;
+    
+    //记录当前选中位置
+    private int currentIndex;
+    
+    //进入按钮
+    private Button skipButton;
+    
+    //网络状态
+    private int netState;
+    
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+    	super.onCreate(savedInstanceState);
+    	requestWindowFeature(Window.FEATURE_NO_TITLE);
+    	setContentView(R.layout.activity_guidance);
+    	initView();
+    	initData();
+    	Intent intent = getIntent();
+		netState = intent.getIntExtra("net_state", 2);
+    }
+    
+    /**
+     * 初始化组件
+     */
+    private void initView(){
+    	//实例化ArrayList对象
+    	views = new ArrayList<View>();
+    	//实例化ViewPager
+    	viewPager = (ViewPager) findViewById(R.id.viewpager);
+    	//实例化ViewPager适配器
+    	vpAdapter = new ViewPagerAdapter(views,this);
+    	//实例按钮
+    	skipButton = (Button)findViewById(R.id.button_skip);
+    	//按钮监听
+    	skipButton.setOnClickListener(new ButtonListener());
+    }
+    
+    /**
+     * 初始化数据
+     */
+    private void initData(){
+    	//定义一个布局并设置参数
+    	@SuppressWarnings("deprecation")
+		LinearLayout.LayoutParams mParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT);
+   
+    	//初始化引导图片列表
+    	for(int i=0; i < pics.length; i++) {
+	        ImageView iv = new ImageView(this);
+	        iv.setLayoutParams(mParams);
+	        iv.setImageResource(pics[i]);
+	        views.add(iv);
+    	} 
+	    //设置数据
+	    viewPager.setAdapter(vpAdapter);
+	    //设置监听
+	    viewPager.setOnPageChangeListener(this);
+	    //初始化底部小点
+	    initPoint();
+    }
+    
+    /**
+     * 初始化底部小点
+     */
+    private void initPoint(){
+    	LinearLayout linearLayout = (LinearLayout) findViewById(R.id.ll);       
+    	points = new ImageView[pics.length];
+    	//循环取得小点图片
+	    for (int i = 0; i < pics.length; i++) {
+	    	//得到一个LinearLayout下面的每一个子元素
+	    	points[i] = (ImageView) linearLayout.getChildAt(i);
+	    	//默认都设为灰色
+	    	points[i].setEnabled(true);
+	    	//设置位置tag，方便取出与当前位置对应
+	    	points[i].setTag(i);
+	    }
+	    //设置当面默认的位置
+	    currentIndex = 0;
+	    //设置为白色，即选中状态
+	    points[currentIndex].setEnabled(false);
+    }
+    
+    /**
+     * 当滑动状态改变时调用  arg0 ==1的时候表示正在滑动，arg0==2的时候表示滑动完毕了，arg0==0的时候表示什么都没做，就是停在那
+     */
+	@Override
+	public void onPageScrollStateChanged(int arg0) {
+		// TODO Auto-generated method stub
+	}
+
+	/**
+     * 当当前页面被滑动时调用
+     */
+	@Override
+	public void onPageScrolled(int arg0, float arg1, int arg2) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/**
+     * 当新的页面被选中时调用
+     */
+	@Override
+	public void onPageSelected(int position) {
+		// TODO Auto-generated method stub
+		setCurDot(position);
+		if(position == pics.length - 1){
+			skipButton.setVisibility(View.VISIBLE);
+		}else if(skipButton.getVisibility() == 0){
+			skipButton.setVisibility(View.GONE);
+		}
+	}
+	
+	/**
+     * 立即进入按钮
+     */
+	private class ButtonListener implements OnClickListener{
+		@Override
+		public void onClick(View v) {
+			// TODO Auto-generated method stub
+			Intent intent = new Intent(GuidanceActivity.this,HomeActivity.class);
+			intent.putExtra("net_state", netState); 
+			startActivity(intent);
+			GuidanceActivity.this.finish();
+		}
+    	
+    }
+
+    /**
+     * 设置当前的小点的位置
+     */
+    private void setCurDot(int positon){
+         if (positon < 0 || positon > pics.length - 1 || currentIndex == positon) {
+             return;
+         }
+         points[positon].setEnabled(false);
+         points[currentIndex].setEnabled(true);
+
+         currentIndex = positon;
+     }
+	
+}

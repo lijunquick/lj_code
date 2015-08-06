@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal" >
+    
+　　  <TextView
+		android:id="@+id/Item_pd_name"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:ellipsize="marquee"
+        android:marqueeRepeatLimit="marquee_forever"
+		android:paddingBottom="5dp"
+		android:paddingLeft="5dp"
+		android:paddingRight="2dp"
+		android:paddingTop="5dp"
+		android:singleLine="true"
+		android:text="商铺名称商铺名称商铺名称 x1"
+		android:textSize="15sp" />
+　　  
+
+</LinearLayout>

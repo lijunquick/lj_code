@@ -1,0 +1,257 @@
+package com.asj.pls.activity;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.asj.pls.R;
+import com.asj.pls.util.JSONUtils;
+
+import android.app.Activity;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.os.Handler;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnTouchListener;
+import android.view.ViewGroup.LayoutParams;
+import android.view.Window;
+import android.view.View.OnClickListener;
+import android.view.WindowManager;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+public class FillSingleActivity extends Activity implements OnClickListener{
+
+	/** 
+     * 返回
+     */
+    private ImageView backFillSingle;
+    
+    /** 
+     * 收货人、手机、地址
+     */
+    private TextView conText,mobText,addrText;
+    
+    /** 
+     * 地址修改栏
+     */
+    private RelativeLayout addressEdit;
+    
+    /** 
+     * 支付方式、配送方式
+     */
+    private LinearLayout payWay,deliveryWay;
+    
+    /** 
+     * 一、在线支付0、货到付款1 二、送货到家0、1门店自提
+     */
+    private Integer payType,deliveryType;
+    
+    
+    /** 
+     * 选择弹窗
+     */
+    private PopupWindow payPopupWindow;
+    
+    /** 
+     * 支付名称、配送名称
+     */
+    private TextView curPayTypeName,curDeliveryTypeName;
+    
+    /** 
+     * 已选中、未选中
+     */
+    private Drawable selected;
+    
+    private Drawable unselected;
+    
+    private String ordersJson = "{'data':{'address':'浙江省杭州市下沙区天城东路77号创意大厦1901','buyPrice':35.00,'cartList':[{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20156271711422063546807400.jpg','num':'1','pdId':1,'pdName':'清清美 卫生手套','price':'3.50'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/201576185349004808334808.jpg','num':'1','pdId':2,'pdName':'利群 硬盒香烟 200支/条','price':'140.00'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20156595950765574798888.jpg','num':'1','pdId':3,'pdName':'早天下 绿宝甜瓜 约3斤','price':'5.40'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/2015523144994338920094282.jpg','num':'1','pdId':4,'pdName':'徐福记 香酥芝麻味沙琪玛 311g','price':'8.90'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/201569141014118994702510.jpg','num':'1','pdId':5,'pdName':'红菱花 味精 100g/袋','price':'2.30'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20156281017367793285427537.jpg','num':'1','pdId':6,'pdName':'达利园 软面包香奶味 18个 360g','price':'9.50'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/201576180424449549230990.jpg','num':'1','pdId':7,'pdName':'黄山 中国松硬盒烟 200支/条','price':'110.00'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/20156271031569276028322855.jpg','num':'1','pdId':8,'pdName':'峪林 包子饺子料 35g','price':'2322.90'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/2015628189306195028721131.jpg','num':'1','pdId':9,'pdName':'佳宝 原味酸奶 180g','price':'2.30'},{'imageurl':'http://image.asj.com/oo/base/product/image/180X180/2015524202514799556709621.jpg','num':'1','pdId':10,'pdName':'崂山 冰镇精品啤酒 600ml/瓶','price':'2.90'}],'consignee':'王波','freePrice':0,'mobile':'15657113890'},'errorInfo':'请求成功','errorNo':0}";
+    
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		setContentView(R.layout.activity_fill_single);
+		initView();
+		new Thread(new Runnable() {
+        	
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				mHandler.obtainMessage().sendToTarget();
+			}
+			
+        }).start();
+	}
+	
+	private void initView(){
+		
+		payType = 0;
+		deliveryType = 0;
+		selected = getResources().getDrawable(R.drawable.pay_selected);
+		unselected = getResources().getDrawable(R.drawable.pay_unselected);
+		selected.setBounds(0, 0, selected.getMinimumWidth(), selected.getMinimumHeight());
+		unselected.setBounds(0, 0, unselected.getMinimumWidth(), unselected.getMinimumHeight());
+		
+		backFillSingle = (ImageView)findViewById(R.id.back_fillSingle);
+		conText = (TextView) findViewById(R.id.my_orders_consignee);
+		mobText = (TextView) findViewById(R.id.my_orders_mobile);
+		addrText = (TextView) findViewById(R.id.my_orders_address);
+		addressEdit = (RelativeLayout) findViewById(R.id.orders_address_line);
+		
+		curPayTypeName = (TextView) findViewById(R.id.current_pay_type);
+		payWay = (LinearLayout) findViewById(R.id.pay_way);
+		
+		curDeliveryTypeName = (TextView) findViewById(R.id.current_delivery_type);
+		deliveryWay = (LinearLayout) findViewById(R.id.delivery_way);
+		
+		payWay.setOnClickListener(this);
+		deliveryWay.setOnClickListener(this);
+		addressEdit.setOnClickListener(this);
+		backFillSingle.setOnClickListener(this);
+	}
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		switch(v.getId()){
+		case R.id.back_fillSingle:
+			this.finish();
+			break;
+		case R.id.orders_address_line:
+			break;
+		case R.id.pay_way://切换支付方式
+			getPayPopupWindowInstance(0);
+			payPopupWindow.showAtLocation(payWay, Gravity.CENTER_HORIZONTAL, 0, 0);
+			break;
+		case R.id.pay_online://选择在线支付
+			payType = 0;
+			closePopupWindow();
+			curPayTypeName.setText("在线支付");
+			break;
+		case R.id.pay_cod://选择货到付款
+			payType = 1;
+			closePopupWindow();
+			curPayTypeName.setText("货到付款");
+			break;
+		case R.id.delivery_way://切换配送方式
+			getPayPopupWindowInstance(1);
+			payPopupWindow.showAtLocation(deliveryWay, Gravity.CENTER_HORIZONTAL, 0, 0);
+			break;
+		case R.id.delivery_unself://选择送货到家
+			deliveryType = 0;
+			closePopupWindow();
+			curDeliveryTypeName.setText("送货到家");
+			break;
+		case R.id.delivery_self://选择门店自提
+			deliveryType = 1;
+			closePopupWindow();
+			curDeliveryTypeName.setText("门店自提");
+			break;
+		}
+	}
+	
+	private Handler mHandler = new Handler() {
+		public void handleMessage(android.os.Message msg) {
+			try {
+				if(ordersJson != null){
+					JSONObject cartObject = JSONUtils.parseJson(ordersJson, "data");
+					conText.setText(cartObject.getString("consignee"));
+					mobText.setText(cartObject.getString("mobile"));
+					addrText.setText(cartObject.getString("address"));
+					JSONArray cartArray = cartObject.getJSONArray("cartList");
+					if(cartArray != null && cartArray.length() > 0){
+					}
+				}
+			} catch (JSONException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+			}
+		};
+		
+	};
+	
+	/* 
+     * 获取PopupWindow实例 
+     */  
+    private void getPayPopupWindowInstance(int type) {
+        if (null != payPopupWindow) {
+        	closePopupWindow();
+            return;
+        } else {
+            initPopuptWindow(type);
+        }
+    }
+    
+    /* 
+     * 创建PopupWindow type 0支付方式、1配送方式
+     */  
+    private void initPopuptWindow(int type) {
+    	
+         // 设置动画效果     
+        WindowManager.LayoutParams params = getWindow().getAttributes();  
+        params.alpha = 0.7f;  
+        getWindow().setAttributes(params);
+    	
+        LayoutInflater layoutInflater = LayoutInflater.from(this);
+        View popupWindow = null;
+        
+        if(type == 0){
+        	popupWindow = layoutInflater.inflate(R.layout.pop_fill_single_pay, null);
+        	LinearLayout payOnline = (LinearLayout) popupWindow.findViewById(R.id.pay_online);
+            LinearLayout payCod = (LinearLayout) popupWindow.findViewById(R.id.pay_cod);
+            payOnline.setOnClickListener(this);
+            payCod.setOnClickListener(this);
+            if(payType == 1){//货到付款
+            	TextView payOnlineText = (TextView) popupWindow.findViewById(R.id.pay_online_text);
+                TextView payCodText = (TextView) popupWindow.findViewById(R.id.pay_cod_text);
+            	payOnlineText.setCompoundDrawables(null, null, unselected, null);
+            	payCodText.setCompoundDrawables(null, null, selected, null);
+            }
+        }else if(type == 1){
+        	popupWindow = layoutInflater.inflate(R.layout.pop_fill_single_delivery, null);
+        	LinearLayout deliveryUnself = (LinearLayout) popupWindow.findViewById(R.id.delivery_unself);
+            LinearLayout deliverySelf = (LinearLayout) popupWindow.findViewById(R.id.delivery_self);
+            deliveryUnself.setOnClickListener(this);
+            deliverySelf.setOnClickListener(this);
+            if(deliveryType == 1){//门店自提
+            	TextView deliveryUnselfText = (TextView) popupWindow.findViewById(R.id.delivery_unself_text);
+            	TextView deliverySelfText = (TextView) popupWindow.findViewById(R.id.delivery_self_text);
+            	deliveryUnselfText.setCompoundDrawables(null, null, unselected, null);
+            	deliverySelfText.setCompoundDrawables(null, null, selected, null);
+            }
+        }
+        
+        int mScreenWidth = getWindowManager().getDefaultDisplay().getWidth();
+        mScreenWidth = mScreenWidth - mScreenWidth/5;
+        payPopupWindow = new PopupWindow(popupWindow, mScreenWidth, LayoutParams.WRAP_CONTENT, true);  
+        payPopupWindow.setFocusable(true);
+        popupWindow.setOnTouchListener(new OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				// TODO Auto-generated method stub
+				closePopupWindow();
+				return false;
+			}
+		});
+    }
+    
+    /** 
+     * 关闭窗口 
+     */  
+    private void closePopupWindow(){
+    	if(payPopupWindow != null && payPopupWindow.isShowing()) {
+    		payPopupWindow.dismiss();
+    		payPopupWindow = null;
+    		WindowManager.LayoutParams params= getWindow().getAttributes();
+    		params.alpha=1f;
+    		getWindow().setAttributes(params);
+       }     
+    }
+}

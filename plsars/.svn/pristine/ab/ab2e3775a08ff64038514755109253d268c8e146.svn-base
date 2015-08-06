@@ -1,0 +1,50 @@
+package com.asj.pls.activity;
+
+import com.asj.pls.R;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.view.Window;
+import android.view.View.OnClickListener;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+public class PromoteActivity extends Activity implements OnClickListener{
+
+	/** 
+     * 返回
+     */
+    private ImageView backIndexPromote;
+    
+    /** 
+     * 状态显示栏
+     */
+    private TextView promoteText;
+    
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		setContentView(R.layout.activity_promote);
+		
+		Intent intent = getIntent();
+		String promoteType = intent.getStringExtra("promotetype");
+		
+		promoteText = (TextView) findViewById(R.id.promote_text);
+		promoteText.setText(promoteType);
+		backIndexPromote = (ImageView) findViewById(R.id.back_index_promote);
+		backIndexPromote.setOnClickListener(this);
+	}
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		switch(v.getId()){
+		case R.id.back_index_promote:
+			this.finish();
+			break;
+		}
+	}
+}

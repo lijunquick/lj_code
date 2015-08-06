@@ -1,0 +1,107 @@
+package com.asj.pls.adapter;
+
+import java.util.ArrayList;
+
+import com.asj.pls.R;
+import com.asj.pls.info.OrdersInfo;
+import com.asj.pls.view.MyListView;
+
+import android.content.Context;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.View.OnClickListener;
+import android.widget.BaseAdapter;
+import android.widget.TextView;
+import android.widget.Toast;
+
+
+/**
+ * 订单列表适配器
+ *
+ */
+
+public class OrdersAdapter extends BaseAdapter {
+
+	private ArrayList<OrdersInfo> grouplist;
+	
+	private ArrayList<ArrayList<String>> childList;
+	
+	private Context context;
+
+	public OrdersAdapter(Context context, ArrayList<OrdersInfo> grouplist, ArrayList<ArrayList<String>> childList) {
+		this.childList = childList;
+		this.grouplist = grouplist;
+		this.context = context;
+	}
+
+	@Override
+	public int getCount() {
+		// TODO Auto-generated method stub
+		if(grouplist == null){
+			return 0;
+		}
+		return grouplist.size();
+	}
+
+	@Override
+	public Object getItem(int position) {
+		// TODO Auto-generated method stub
+		if(grouplist == null){
+			return null;
+		}
+		return grouplist.get(position);
+	}
+
+	@Override
+	public long getItemId(int position) {
+		// TODO Auto-generated method stub
+		return position;
+	}
+
+	@Override
+	public View getView(final int position, View convertView, ViewGroup parent) {
+		// TODO Auto-generated method stub
+		final Holder hold;
+		if (convertView == null) {
+			hold = new Holder();
+			convertView = View.inflate(context, R.layout.item_orders, null);
+			hold.ostatus = (TextView) convertView.findViewById(R.id.orders_status_name);
+			hold.otime = (TextView) convertView.findViewById(R.id.orders_time);
+			hold.opprice = (TextView) convertView.findViewById(R.id.orders_pay_price);
+//			hold.obtn = (Button) convertView.findViewById(R.id.bttn);
+			hold.pdList = (MyListView) convertView.findViewById(R.id.pdListView);
+			convertView.setTag(hold);
+		} else {
+			hold = (Holder) convertView.getTag();
+		}
+		hold.ostatus.setText(grouplist.get(position).getStatus());
+		hold.otime.setText(grouplist.get(position).getTime());
+		hold.opprice.setText(grouplist.get(position).getPrice());
+//		int status = grouplist.get(position).getValue();
+//		if(status == 0){//订单付款
+//			hold.obtn.setText("去付款");
+//		} else if(status == 1){//订单退款
+//			hold.obtn.setText("退款");
+//		} else if(status == 2){//确认收货
+//			hold.obtn.setText("确认收货");
+//		}
+		if(childList.size() > 0 && childList.get(position) != null){
+			hold.pdList.setAdapter(new OrdersPdAdapter(context, grouplist.get(position).getOrdersNo(), childList.get(position))); 
+		}
+		convertView.setOnClickListener(new OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Toast.makeText(v.getContext(), grouplist.get(position).getOrdersNo(), Toast.LENGTH_SHORT).show();
+			}
+		});
+		return convertView;
+	}
+	
+	static class Holder {
+		private TextView ostatus, otime, opprice;
+//		private Button obtn;
+		private MyListView pdList;
+	}
+	
+}

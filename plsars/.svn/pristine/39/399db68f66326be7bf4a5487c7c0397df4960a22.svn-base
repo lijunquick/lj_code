@@ -1,0 +1,16 @@
+package com.asj.pls.init;
+
+import java.math.BigDecimal;
+
+public class Model {
+
+	/** 
+     * 购物车数量
+     */
+	public static String cartNum = "0";
+	
+	/** 
+     * 购物车价格
+     */
+	public static BigDecimal cartPrice = new BigDecimal("0.00");
+}

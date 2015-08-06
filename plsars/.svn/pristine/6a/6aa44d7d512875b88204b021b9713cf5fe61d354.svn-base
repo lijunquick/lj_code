@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">拍立送</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_splash">启动加载页</string>
+    <string name="title_activity_guidance">引导页</string>
+    <string name="title_activity_home">HomeActivity</string>
+    <string name="title_activity_search">SearchActivity</string>
+
+</resources>

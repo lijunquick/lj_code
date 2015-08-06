@@ -1,0 +1,62 @@
+package com.asj.pls.adapter;
+
+import java.util.ArrayList;
+
+import com.asj.pls.util.ImageUtils;
+import com.nostra13.universalimageloader.core.ImageLoader;
+
+import android.content.Context;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.view.View;
+import android.widget.ImageView;
+
+/**
+ * 开场适配器
+ * </BR> </BR> By lijun
+ * */
+public class ViewPagerAdapter extends PagerAdapter {
+
+	//界面列表
+	private ArrayList<View> views;
+	
+	public ViewPagerAdapter (ArrayList<View> views, Context context){
+        this.views = views;
+        ImageUtils.initImageLoader(context);
+    }
+	
+    public ImageLoader imageLoader = ImageLoader.getInstance();
+    
+	@Override
+	public int getCount() {
+		// TODO Auto-generated method stub
+		if (views != null) {
+			return views.size();
+        }
+		return 0;
+	}
+	
+	/**
+     * 初始化position位置的界面
+     */
+	@Override
+	public Object instantiateItem(View view, int position) {
+		ImageView imageView = (ImageView) views.get(position);
+		if(imageView.getTag() != null){
+			imageLoader.displayImage(imageView.getTag() + "", imageView);
+		}
+		((ViewPager) view).addView(views.get(position), 0);
+	    return views.get(position);
+	}
+
+	@Override
+	public boolean isViewFromObject(View view, Object arg1) {
+		// TODO Auto-generated method stub
+		return (view == arg1);
+	}
+
+	@Override
+    public void destroyItem(View view, int position, Object arg2) {
+        ((ViewPager) view).removeView(views.get(position));       
+    }
+}

@@ -1,0 +1,174 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:id="@+id/address_op_line"
+    	android:layout_width="match_parent"
+    	android:layout_height="48dp"
+   		android:background="@drawable/pls_back_title" >
+    
+        <TextView
+            android:id="@+id/address_op_title"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="@color/pls_white"
+            android:gravity="center"
+            android:textSize="15.0sp"/>
+
+        <ImageView
+            android:id="@+id/exit_op"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:padding="10dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/pls_index_back" />
+        
+        <TextView
+            android:id="@+id/address_submit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/address_submit"/>
+        
+	</RelativeLayout>
+
+    <LinearLayout
+	        android:layout_width="match_parent"
+	        android:layout_height="match_parent"
+	        android:layout_below="@+id/address_op_line"
+	        android:orientation="vertical" >
+			
+        	<LinearLayout
+					android:layout_width="match_parent"
+				    android:layout_height="wrap_content"
+				    android:padding="10dp"
+				    android:orientation="horizontal">
+        			
+        	    	<TextView
+			            android:layout_width="match_parent"
+			            android:layout_height="match_parent"
+			            android:layout_weight="3"
+			            android:textSize="15.0sp"
+			            android:text="联系人" />
+        	    	
+        	    	<EditText
+					    android:id="@+id/link_name"
+					    android:layout_width="match_parent"
+			            android:layout_height="match_parent"
+			            android:layout_weight="1"
+			            android:layout_marginLeft="15dp"
+			            android:background="@android:color/white"
+			            android:textSize="15.0sp"
+			            android:hint="输入真实姓名"/>
+			</LinearLayout>
+			
+        	<TextView
+		        android:layout_width="match_parent"
+		        android:layout_height="0.1dp"
+		        android:layout_marginLeft="10dp"
+		        android:background="@color/gray_bg"/>
+        	
+        	<LinearLayout
+					android:layout_width="match_parent"
+				    android:layout_height="wrap_content"
+				    android:padding="10dp"
+				    android:orientation="horizontal">
+        			
+        	    	<TextView
+			            android:layout_width="match_parent"
+			            android:layout_height="match_parent"
+			            android:layout_weight="3"
+			            android:textSize="15.0sp"
+			            android:text="手机号码" />
+        	    	
+        	    	<EditText
+					    android:id="@+id/link_mobile"
+					    android:layout_width="match_parent"
+			            android:layout_height="match_parent"
+			            android:layout_weight="1"
+			            android:layout_marginLeft="15dp"
+			            android:background="@android:color/white"
+			            android:inputType="phone"
+			            android:textSize="15.0sp"
+			            android:maxLength="11"
+			            android:hint="输入11位有效号码"/>
+			</LinearLayout>
+			
+        	<TextView
+		        android:layout_width="match_parent"
+		        android:layout_height="0.1dp"
+		        android:layout_marginLeft="10dp"
+		        android:background="@color/gray_bg"/>
+        	
+        	<LinearLayout
+					android:layout_width="match_parent"
+				    android:layout_height="wrap_content"
+				    android:padding="10dp"
+				    android:orientation="horizontal">
+        			
+        	    	<TextView
+			            android:layout_width="match_parent"
+			            android:layout_height="match_parent"
+			            android:layout_weight="3"
+			            android:textSize="15.0sp"
+			            android:text="所在地区" />
+        	    	
+        	    	<TextView
+        	    	    android:id="@+id/link_zone"
+					    android:layout_width="match_parent"
+			            android:layout_height="match_parent"
+			            android:layout_weight="1"
+			            android:singleLine="true"
+						android:ellipsize="end"
+			            android:textSize="15.0sp"
+			            android:layout_marginLeft="15dp"
+			            android:text="天城东路77号"/>
+        	    	
+			</LinearLayout>
+			
+        	<TextView
+		        android:layout_width="match_parent"
+		        android:layout_height="0.1dp"
+		        android:layout_marginLeft="10dp"
+		        android:background="@color/gray_bg"/>
+        	
+        	<LinearLayout
+					android:layout_width="match_parent"
+				    android:layout_height="wrap_content"
+				    android:padding="10dp"
+				    android:orientation="horizontal">
+        			
+        	    	<TextView
+			            android:layout_width="match_parent"
+			            android:layout_height="match_parent"
+			            android:layout_weight="3"
+			            android:textSize="15.0sp"
+			            android:text="详细地址" />
+        	    	
+        	    	<EditText
+					    android:id="@+id/link_detail"
+					    android:layout_width="match_parent"
+			            android:layout_height="match_parent"
+			            android:layout_weight="1"
+			            android:layout_marginLeft="15dp"
+			            android:singleLine="true"
+						android:ellipsize="end"
+			            android:background="@android:color/white"
+			            android:textSize="15.0sp"
+			            android:hint="输入楼号、门牌号等详细信息"/>
+        	    	
+			</LinearLayout>
+			
+        	<TextView
+		        android:layout_width="match_parent"
+		        android:layout_height="0.1dp"
+		        android:background="@color/gray_bg"/>
+        	
+	</LinearLayout>
+	
+</RelativeLayout>

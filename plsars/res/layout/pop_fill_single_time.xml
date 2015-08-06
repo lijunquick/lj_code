@@ -1,0 +1,31 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+
+    <RelativeLayout
+        android:id="@+id/fillSingle_time_head"
+    	android:layout_width="match_parent"
+    	android:layout_height="40dp"
+   		android:background="@drawable/pls_back_title" >
+    
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="@color/pls_white"
+            android:gravity="center"
+            android:textSize="15.0sp"
+            android:text="请选择送达时间" />
+
+	</RelativeLayout>
+	
+    <ListView
+        android:id="@+id/time_ListView"
+        android:layout_width="match_parent"
+        android:layout_height="310dp"
+        android:layout_below="@+id/fillSingle_time_head"
+        android:fadingEdge="none"
+        android:overScrollMode="never"/>
+   
+</RelativeLayout>
